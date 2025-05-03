@@ -1,13 +1,41 @@
-import React, { useState, useContext } from 'react';
-import { View, Text, Button, ScrollView, StyleSheet, TextInput } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
+import { View, Text, Button, ScrollView, StyleSheet } from 'react-native';
+import { TextInput } from 'react-native-gesture-handler';
 import { Picker } from '@react-native-picker/picker';
 import { AuthContext } from '../context/AuthContext';
 
 const AdminPanelScreen = () => {
+  const [users, setUsers] = useState([]);
+  const [handles, setHandles] = useState([]);
   const [selectedUser, setSelectedUser] = useState('');
   const [selectedHandle, setSelectedHandle] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const { token } = useContext(AuthContext);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [userRes, handleRes] = await Promise.all([
+          fetch(`${process.env.EXPO_PUBLIC_API_BASE}/api/admin/users`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch(`${process.env.EXPO_PUBLIC_API_BASE}/api/admin/handles`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+        ]);
+
+        const usersData = await userRes.json();
+        const handlesData = await handleRes.json();
+
+        setUsers(usersData);
+        setHandles(handlesData);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const assignRole = async () => {
     try {
@@ -36,23 +64,31 @@ const AdminPanelScreen = () => {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Admin Panel</Text>
 
-      <Text style={styles.label}>User Email</Text>
-      <TextInput
+      <Text>Select User</Text>
+      <Picker
+        selectedValue={selectedUser}
+        onValueChange={(val) => setSelectedUser(val)}
         style={styles.input}
-        value={selectedUser}
-        onChangeText={setSelectedUser}
-        placeholder="Enter user email"
-      />
+      >
+        <Picker.Item label="Select User" value="" />
+        {users.map((user) => (
+          <Picker.Item key={user.email} label={`${user.name} (${user.email})`} value={user.email} />
+        ))}
+      </Picker>
 
-      <Text style={styles.label}>Handle</Text>
-      <TextInput
+      <Text>Select Handle</Text>
+      <Picker
+        selectedValue={selectedHandle}
+        onValueChange={(val) => setSelectedHandle(val)}
         style={styles.input}
-        value={selectedHandle}
-        onChangeText={setSelectedHandle}
-        placeholder="@Odisha_WithRG"
-      />
+      >
+        <Picker.Item label="Select Handle" value="" />
+        {handles.map((handle) => (
+          <Picker.Item key={handle.realHandle} label={handle.displayName} value={handle.realHandle} />
+        ))}
+      </Picker>
 
-      <Text style={styles.label}>Role</Text>
+      <Text>Assign Role</Text>
       <Picker
         selectedValue={selectedRole}
         onValueChange={(val) => setSelectedRole(val)}
@@ -72,7 +108,6 @@ const AdminPanelScreen = () => {
 const styles = StyleSheet.create({
   container: { padding: 16 },
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 16 },
-  label: { marginBottom: 4 },
   input: {
     borderWidth: 1, borderColor: '#ccc', padding: 10,
     borderRadius: 6, marginBottom: 16
