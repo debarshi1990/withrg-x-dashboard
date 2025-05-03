@@ -1,4 +1,4 @@
-
+import AdminPanelScreen from './screens/AdminPanelScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './screens/LoginScreen';
@@ -10,6 +10,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="AdminPanel" component={AdminPanelScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
       </Stack.Navigator>
