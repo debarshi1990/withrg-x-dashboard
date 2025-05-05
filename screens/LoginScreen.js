@@ -1,31 +1,60 @@
+// screens/LoginScreen.js
 
-import { View, Button, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Button, View, Text, ActivityIndicator } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
+import Constants from 'expo-constants';
 
-const BACKEND_URL = 'http://localhost:3000'; // Your backend URL
+WebBrowser.maybeCompleteAuthSession();
 
-export default function LoginScreen({ navigation }) {
-  async function handleLogin() {
-    const authUrl = `${BACKEND_URL}/api/auth/twitter`;
-    const result = await AuthSession.startAsync({ authUrl });
-    
-    if (result?.type === 'success') {
-      // TODO: Save session, then navigate
-      navigation.replace('Dashboard');
+const discovery = {
+  authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+  tokenEndpoint: 'https://oauth2.googleapis.com/token',
+};
+
+const LoginScreen = () => {
+  const [accessToken, setAccessToken] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const redirectUri = AuthSession.makeRedirectUri({
+    native: 'your.app://redirect', // Replace with your app's redirect scheme
+    useProxy: true,
+  });
+
+  const clientId = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+
+  const [request, response, promptAsync] = AuthSession.useAuthRequest(
+    {
+      clientId,
+      scopes: ['openid', 'profile', 'email'],
+      redirectUri,
+    },
+    discovery
+  );
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { authentication } = response;
+      setAccessToken(authentication.accessToken);
+      // optionally send this accessToken to your backend
     }
-  }
+  }, [response]);
 
   return (
-    <View style={styles.container}>
-      <Button title="Login with Twitter" onPress={handleLogin} />
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      {loading && <ActivityIndicator />}
+      <Button
+        disabled={!request}
+        title="Sign in with Google"
+        onPress={() => {
+          setLoading(true);
+          promptAsync().finally(() => setLoading(false));
+        }}
+      />
+      {accessToken && <Text>Token: {accessToken}</Text>}
     </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
+export default LoginScreen;
