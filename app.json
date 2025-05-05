@@ -8,7 +8,7 @@
     "scheme": "myapp",
     "updates": {
       "enabled": false
-    }
+    },
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
