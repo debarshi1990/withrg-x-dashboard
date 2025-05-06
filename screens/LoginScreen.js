@@ -1,58 +1,46 @@
 // screens/LoginScreen.js
 
-import React, { useEffect, useState } from 'react';
-import { Button, View, Text, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Button, ActivityIndicator, Alert } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import * as AuthSession from 'expo-auth-session';
-import Constants from 'expo-constants';
-
-WebBrowser.maybeCompleteAuthSession();
-
-const discovery = {
-  authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-  tokenEndpoint: 'https://oauth2.googleapis.com/token',
-};
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 
 const LoginScreen = () => {
-  const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const redirectUri = AuthSession.makeRedirectUri({
-    native: 'your.app://redirect', // Replace with your app's redirect scheme
-    useProxy: true,
-  });
+  const handleLogin = async () => {
+    setLoading(true);
+    const redirectUrl = 'https://withrg.in/auth-success';
 
-  const clientId = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+    const result = await WebBrowser.openAuthSessionAsync(
+      'https://withrg-x-backend.onrender.com/api/auth/google',
+      redirectUrl
+    );
 
-  const [request, response, promptAsync] = AuthSession.useAuthRequest(
-    {
-      clientId,
-      scopes: ['openid', 'profile', 'email'],
-      redirectUri,
-    },
-    discovery
-  );
+    if (result.type === 'success' && result.url) {
+      const url = new URL(result.url);
+      const token = url.searchParams.get('token');
 
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const { authentication } = response;
-      setAccessToken(authentication.accessToken);
-      // optionally send this accessToken to your backend
+      if (token) {
+        await AsyncStorage.setItem('authToken', token);
+        router.replace('/AvailableHandlesScreen'); // or 'dashboard' route
+      } else {
+        Alert.alert('Login Failed', 'No token received from Google');
+      }
+    } else {
+      Alert.alert('Login Cancelled or Failed');
     }
-  }, [response]);
+
+    setLoading(false);
+  };
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      {loading && <ActivityIndicator />}
-      <Button
-        disabled={!request}
-        title="Sign in with Google"
-        onPress={() => {
-          setLoading(true);
-          promptAsync().finally(() => setLoading(false));
-        }}
-      />
-      {accessToken && <Text>Token: {accessToken}</Text>}
+      {loading ? <ActivityIndicator /> : (
+        <Button title="Sign in with Google" onPress={handleLogin} />
+      )}
     </View>
   );
 };
