@@ -10,7 +10,7 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async () => {
+  cconst handleLogin = async () => {
     setLoading(true);
     const redirectUrl = 'https://withrg.in/auth-success';
   
@@ -35,6 +35,8 @@ const LoginScreen = () => {
         const data = await res.json();
   
         if (res.ok && Array.isArray(data.handles)) {
+          await AsyncStorage.setItem('userHandles', JSON.stringify(data.handles)); // 💾 Save handles
+  
           router.replace({
             pathname: '/AvailableHandlesScreen',
             params: { handles: JSON.stringify(data.handles) },
