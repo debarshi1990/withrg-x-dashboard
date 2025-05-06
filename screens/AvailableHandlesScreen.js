@@ -1,69 +1,50 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function AvailableHandlesScreen() {
-  const [handles, setHandles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { handles } = useLocalSearchParams(); // optional from navigation
+  const [localHandles, setLocalHandles] = useState(null);
 
   useEffect(() => {
-    fetch('http://192.168.0.183:10000/api/user/handles') // or Render backend URL
-      .then((res) => res.json())
-      .then((data) => {
-        setHandles(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Error fetching handles:', err);
-        setLoading(false);
-      });
-  }, []);
+    const loadHandles = async () => {
+      if (handles) {
+        setLocalHandles(JSON.parse(handles));
+      } else {
+        const saved = await AsyncStorage.getItem('userHandles');
+        if (saved) setLocalHandles(JSON.parse(saved));
+      }
+    };
+    loadHandles();
+  }, [handles]);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.handle}>{item.handle}</Text>
-      <Text style={styles.status}>
-        {item.isAuthorized ? '✅ Authorized' : '⛔ Not Authorized'}
-      </Text>
-    </View>
-  );
-
-  if (loading) return <ActivityIndicator style={{ marginTop: 50 }} size="large" color="#000" />;
+  if (!localHandles) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator />
+        <Text>Loading your access...</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Accessible Twitter Handles</Text>
-      <FlatList
-        data={handles}
-        keyExtractor={(item) => item.handle}
-        renderItem={renderItem}
-      />
-    </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.heading}>Your Assigned Handles</Text>
+      {localHandles.map((item, index) => (
+        <View key={index} style={styles.card}>
+          <Text style={styles.handle}>{item.handle}</Text>
+          <Text style={styles.role}>Role: {item.role}</Text>
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  card: {
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: '#f2f2f2',
-    marginBottom: 10,
-  },
-  handle: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  status: {
-    fontSize: 14,
-    color: 'gray',
-  },
+  container: { padding: 20, alignItems: 'center' },
+  heading: { fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
+  card: { backgroundColor: '#f0f0f0', padding: 15, borderRadius: 8, marginBottom: 10, width: '100%' },
+  handle: { fontSize: 16, fontWeight: '600' },
+  role: { fontSize: 14, color: '#555' },
 });
