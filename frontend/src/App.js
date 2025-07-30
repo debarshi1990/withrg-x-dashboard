@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Alert, AlertDescription } from './components/ui/alert';
 import { Avatar, AvatarFallback } from './components/ui/avatar';
 import { Switch } from './components/ui/switch';
-// Removed Select import - using native select for now
 import { 
   Twitter, 
   Send, 
