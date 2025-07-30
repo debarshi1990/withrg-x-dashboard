@@ -927,7 +927,7 @@ function App() {
                       {tweetText.length}/280 characters
                     </span>
                     {selectedHandles.length > 0 && (
-                      <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                         Posting to {selectedHandles.length} handle{selectedHandles.length > 1 ? 's' : ''}
                       </Badge>
                     )}
