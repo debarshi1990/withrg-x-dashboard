@@ -1091,7 +1091,7 @@ function App() {
                   </div>
 
                   {analytics && (
-                    <div className="mt-6 p-6 bg-gradient-to-br from-orange-50 to-red-50 rounded-lg border border-orange-200">
+                    <div className="mt-6 p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
                       <h3 className="font-semibold mb-4 text-lg">Campaign Tweet Performance</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                         <div className="text-center p-3 bg-white rounded-lg shadow-sm">
