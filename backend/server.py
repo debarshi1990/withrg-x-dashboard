@@ -800,8 +800,9 @@ async def add_team_member(
         {"new_user_email": user_data.email, "role": user_data.role}
     )
     
-    # Remove password from response
+    # Remove password and _id from response
     user_dict.pop("password", None)
+    user_dict.pop("_id", None)
     return {"message": "Team member added successfully", "user": user_dict}
 
 @api_router.get("/team/members")
