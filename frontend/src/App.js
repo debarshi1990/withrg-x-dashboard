@@ -689,7 +689,7 @@ function App() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-orange-100">Campaign Team</p>
+                    <p className="text-blue-100">Campaign Team</p>
                     <p className="text-3xl font-bold">{dashboardStats.total_users}</p>
                     <p className="text-xs text-orange-200">Active members</p>
                   </div>
