@@ -349,13 +349,13 @@ function App() {
 
   const deleteUser = async (userId) => {
     try {
-      await apiCall(`/users/${userId}`, {
+      await apiCall(`/team/members/${userId}`, {
         method: 'DELETE'
       });
       fetchUsers();
-      setMessage('✅ User deleted successfully!');
+      setMessage('✅ Team member removed successfully!');
     } catch (error) {
-      setMessage(`❌ Failed to delete user: ${error.message}`);
+      setMessage(`❌ Failed to remove team member: ${error.message}`);
     }
   };
 
