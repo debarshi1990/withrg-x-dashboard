@@ -359,22 +359,123 @@ async def get_handles(current_user: User = Depends(get_current_user)):
 async def initiate_twitter_oauth(
     current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.SUPER_ADMIN]))
 ):
-    # Generate state for security
-    state = secrets.token_urlsafe(32)
-    
-    # Store state in session/cache (simplified for MVP)
-    await db.oauth_sessions.insert_one({
-        "state": state,
-        "user_id": current_user.id,
-        "created_at": datetime.utcnow()
-    })
-    
-    # For MVP, return instructions (real implementation would redirect to Twitter OAuth)
-    return {
-        "message": "Twitter OAuth flow initiated",
-        "instructions": "In production, this would redirect to Twitter OAuth. For MVP, manually add handle data.",
-        "state": state
-    }
+    try:
+        # Initialize Twitter OAuth handler
+        auth = tweepy.OAuthHandler(
+            os.environ['TWITTER_API_KEY'],
+            os.environ['TWITTER_API_SECRET'],
+            callback_url=f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/auth/twitter/callback"
+        )
+        
+        # Get authorization URL
+        authorization_url = auth.get_authorization_url()
+        request_token = auth.request_token
+        
+        # Store the request token securely
+        await db.oauth_sessions.insert_one({
+            "user_id": current_user.id,
+            "request_token": request_token['oauth_token'],
+            "request_token_secret": request_token['oauth_token_secret'],
+            "created_at": datetime.utcnow(),
+            "expires_at": datetime.utcnow() + timedelta(minutes=15)
+        })
+        
+        return {
+            "authorization_url": authorization_url,
+            "message": "Redirect user to Twitter for authorization"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to initiate OAuth: {str(e)}")
+
+@api_router.post("/handles/callback")
+async def handle_twitter_oauth_callback(
+    request: Request,
+    oauth_token: str,
+    oauth_verifier: str,
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        # Find the stored request token
+        oauth_session = await db.oauth_sessions.find_one({
+            "user_id": current_user.id,
+            "request_token": oauth_token
+        })
+        
+        if not oauth_session:
+            raise HTTPException(status_code=400, detail="Invalid OAuth session")
+        
+        # Check if session expired
+        if datetime.utcnow() > oauth_session['expires_at']:
+            await db.oauth_sessions.delete_one({"_id": oauth_session["_id"]})
+            raise HTTPException(status_code=400, detail="OAuth session expired")
+        
+        # Initialize OAuth handler with stored tokens
+        auth = tweepy.OAuthHandler(
+            os.environ['TWITTER_API_KEY'],
+            os.environ['TWITTER_API_SECRET']
+        )
+        auth.request_token = {
+            'oauth_token': oauth_session['request_token'],
+            'oauth_token_secret': oauth_session['request_token_secret']
+        }
+        
+        # Get access token
+        access_token, access_token_secret = auth.get_access_token(oauth_verifier)
+        
+        # Get user info from Twitter
+        auth.set_access_token(access_token, access_token_secret)
+        api = tweepy.API(auth)
+        twitter_user = api.verify_credentials()
+        
+        # Create handle record
+        handle = TwitterHandle(
+            handle_name=twitter_user.screen_name,
+            screen_name=f"@{twitter_user.screen_name}",
+            twitter_id=str(twitter_user.id),
+            access_token=access_token,
+            access_token_secret=access_token_secret,
+            followers_count=twitter_user.followers_count,
+            following_count=twitter_user.friends_count,
+            tweets_count=twitter_user.statuses_count,
+            profile_image_url=twitter_user.profile_image_url_https,
+            last_sync=datetime.utcnow()
+        )
+        
+        # Check if handle already exists
+        existing_handle = await db.twitter_handles.find_one({"twitter_id": handle.twitter_id})
+        if existing_handle:
+            # Update existing handle
+            await db.twitter_handles.update_one(
+                {"twitter_id": handle.twitter_id},
+                {"$set": handle.dict()}
+            )
+            handle_id = existing_handle["id"]
+        else:
+            # Insert new handle
+            await db.twitter_handles.insert_one(handle.dict())
+            handle_id = handle.id
+        
+        # Clean up OAuth session
+        await db.oauth_sessions.delete_one({"_id": oauth_session["_id"]})
+        
+        # Log activity
+        await log_activity(
+            current_user.id, 
+            "handle_connected", 
+            {"handle_name": handle.screen_name, "twitter_id": handle.twitter_id}
+        )
+        
+        return {
+            "message": "Twitter handle connected successfully",
+            "handle": handle.dict(),
+            "handle_id": handle_id
+        }
+        
+    except tweepy.TweepyException as e:
+        raise HTTPException(status_code=400, detail=f"Twitter API error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to complete OAuth: {str(e)}")
 
 @api_router.post("/handles/add")
 async def add_twitter_handle(
