@@ -810,14 +810,15 @@ async def get_team_members(
 ):
     users = await db.users.find(
         {"is_active": True}, 
-        {"password": 0}  # Exclude password field
+        {"password": 0, "_id": 0}  # Exclude password and _id fields
     ).to_list(1000)
     
     # Get handle information for each user
     for user in users:
         if user.get("assigned_handles"):
             handles = await db.twitter_handles.find(
-                {"id": {"$in": user["assigned_handles"]}}
+                {"id": {"$in": user["assigned_handles"]}},
+                {"_id": 0}  # Exclude _id field
             ).to_list(1000)
             user["handles"] = [{"id": h["id"], "screen_name": h["screen_name"]} for h in handles]
         else:
