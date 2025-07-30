@@ -225,10 +225,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Change color scheme to blue theme"
-    - "Implement Twitter OAuth authentication for handles"
-    - "Add team member management API endpoints"
-  stuck_tasks: []
+    - "Update frontend color scheme to blue"
+  stuck_tasks:
+    - "Update frontend color scheme to blue"
   test_all: false
   test_priority: "high_first"
 
