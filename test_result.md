@@ -195,11 +195,11 @@ frontend:
 
   - task: "Add team member management interface"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: false
           agent: "main"
@@ -210,6 +210,9 @@ frontend:
         - working: "NA"
           agent: "main"
           comment: "Implemented comprehensive team management: Updated add/edit/delete functions to use /team/* APIs, enhanced edit modal with handle assignment UI, added assign/revoke handle functionality"
+        - working: true
+          agent: "testing"
+          comment: "Team management interface working excellently. Enhanced 'Manage Team Member' modal has two sections: 'Basic Information' (name, email, role, active status) and 'X/Twitter Handle Access' with 'Currently Assigned Handles' and 'Available Handles' sections. Handle assignment shows Twitter icons, blue 'Assign' buttons, and clean professional interface. Role dropdown includes 'Campaign Leader' option. All CRUD operations accessible."
 
 metadata:
   created_by: "main_agent"
