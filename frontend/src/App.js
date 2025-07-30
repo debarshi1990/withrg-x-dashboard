@@ -992,7 +992,7 @@ function App() {
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">Campaign X/Twitter Handles</h2>
                 {(user.role === 'super_admin' || user.role === 'admin') && (
-                  <Button onClick={() => setShowHandleModal(true)} className="bg-gradient-to-r from-orange-500 to-red-600">
+                  <Button onClick={() => setShowHandleModal(true)} className="bg-gradient-to-r from-blue-500 to-blue-600">
                     <Plus className="h-4 w-4 mr-2" />
                     Add X Handle
                   </Button>
