@@ -1050,7 +1050,7 @@ function App() {
                     <h3 className="text-lg font-medium text-gray-500 mb-2">No X handles connected</h3>
                     <p className="text-gray-400 mb-4">Connect your campaign X handles to start managing your social presence</p>
                     {(user.role === 'super_admin' || user.role === 'admin') && (
-                      <Button onClick={() => setShowHandleModal(true)} className="bg-gradient-to-r from-orange-500 to-red-600">
+                      <Button onClick={() => setShowHandleModal(true)} className="bg-gradient-to-r from-blue-500 to-blue-600">
                         <Plus className="h-4 w-4 mr-2" />
                         Connect First X Handle
                       </Button>
