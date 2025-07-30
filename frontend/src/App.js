@@ -544,7 +544,7 @@ function App() {
                     onClick={() => {
                       setShowPWAInfo(false);
                     }} 
-                    className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600"
                   >
                     Got it!
                   </Button>
