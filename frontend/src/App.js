@@ -1216,7 +1216,7 @@ function App() {
                         <div key={usr.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                           <div className="flex items-center space-x-3">
                             <Avatar className="w-10 h-10">
-                              <AvatarFallback className="bg-gradient-to-br from-orange-500 to-red-600 text-white">
+                              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
                                 {usr.name.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
