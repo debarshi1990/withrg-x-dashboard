@@ -860,7 +860,7 @@ function App() {
                   {(user.role === 'super_admin' || user.role === 'admin') && (
                     <Button 
                       onClick={() => setActiveTab('admin')} 
-                      className="h-20 flex-col space-y-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                      className="h-20 flex-col space-y-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
                     >
                       <Shield className="h-6 w-6" />
                       <span>Campaign Admin</span>
