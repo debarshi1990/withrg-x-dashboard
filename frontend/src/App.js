@@ -597,7 +597,7 @@ function App() {
                 <span>{getRoleLabel(user.role)}</span>
               </Badge>
               <Avatar>
-                <AvatarFallback className="bg-gradient-to-r from-orange-500 to-red-600 text-white">
+                <AvatarFallback className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
                   {user.name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
