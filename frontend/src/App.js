@@ -1173,7 +1173,7 @@ function App() {
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
                   <h2 className="text-2xl font-bold">Campaign Administration</h2>
-                  <Button onClick={() => setShowUserModal(true)} className="bg-gradient-to-r from-orange-500 to-red-600">
+                  <Button onClick={() => setShowUserModal(true)} className="bg-gradient-to-r from-blue-500 to-blue-600">
                     <UserPlus className="h-4 w-4 mr-2" />
                     Add Team Member
                   </Button>
