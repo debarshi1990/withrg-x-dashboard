@@ -691,9 +691,9 @@ function App() {
                   <div>
                     <p className="text-blue-100">Campaign Team</p>
                     <p className="text-3xl font-bold">{dashboardStats.total_users}</p>
-                    <p className="text-xs text-orange-200">Active members</p>
+                    <p className="text-xs text-blue-200">Active members</p>
                   </div>
-                  <Users className="h-8 w-8 text-orange-200" />
+                  <Users className="h-8 w-8 text-blue-200" />
                 </div>
               </CardContent>
             </Card>
