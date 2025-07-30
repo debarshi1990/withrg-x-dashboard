@@ -1226,7 +1226,7 @@ function App() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => {
-                                    if (confirm(`Are you sure you want to remove ${usr.name} from the campaign team?`)) {
+                                    if (window.confirm(`Are you sure you want to remove ${usr.name} from the campaign team?`)) {
                                       deleteUser(usr.id);
                                     }
                                   }}
