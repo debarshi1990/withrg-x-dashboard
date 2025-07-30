@@ -390,7 +390,7 @@ function App() {
   // Login/Register Form
   if (!token || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-600 via-red-600 to-red-700 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 flex items-center justify-center p-4">
         <div className="absolute inset-0 opacity-20" style={{
           backgroundImage: `url("https://customer-assets.emergentagent.com/job_withrg-x-dash/artifacts/vwh89cbe_Cover-Pic.jpeg")`,
           backgroundSize: 'cover',
