@@ -497,7 +497,7 @@ function App() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowPWAInfo(true)}
-                className="text-orange-200 hover:text-orange-100"
+                className="text-blue-200 hover:text-blue-100"
               >
                 <Smartphone className="h-4 w-4 mr-2" />
                 Learn More
