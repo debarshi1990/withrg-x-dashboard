@@ -7,7 +7,6 @@ import { Badge } from './components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Alert, AlertDescription } from './components/ui/alert';
 import { Avatar, AvatarFallback } from './components/ui/avatar';
-import { Switch } from './components/ui/switch';
 import { 
   Twitter, 
   Send, 
@@ -24,13 +23,10 @@ import {
   UserPlus,
   Shield,
   Link,
-  MoreHorizontal,
   Edit,
   Trash2,
-  Eye,
   CheckCircle,
   XCircle,
-  Calendar,
   Target,
   Zap
 } from 'lucide-react';
@@ -45,9 +41,6 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-  PieChart,
-  Pie,
-  Cell,
   AreaChart,
   Area
 } from 'recharts';
