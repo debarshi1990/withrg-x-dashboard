@@ -472,7 +472,7 @@ function App() {
 
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-semibold" 
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold" 
                 disabled={loading}
               >
                 {loading ? (
