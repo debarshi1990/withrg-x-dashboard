@@ -30,7 +30,8 @@ import {
   Target,
   Zap,
   Download,
-  Smartphone
+  Smartphone,
+  Crown
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -101,7 +102,7 @@ function App() {
     const handleAppInstalled = () => {
       setIsInstallable(false);
       setDeferredPrompt(null);
-      setMessage('🎉 WithRG X Dashboard installed successfully!');
+      setMessage('🎉 WithRG X Dashboard installed successfully! Welcome to True Leadership!');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -120,7 +121,7 @@ function App() {
       const { outcome } = await deferredPrompt.userChoice;
       
       if (outcome === 'accepted') {
-        setMessage('📱 Installing WithRG X Dashboard...');
+        setMessage('📱 Installing WithRG X Dashboard... Be Part of True Leadership!');
       } else {
         setMessage('Installation cancelled. You can install later from browser settings.');
       }
@@ -174,7 +175,7 @@ function App() {
       
       // Check if we're offline
       if (!navigator.onLine) {
-        throw new Error('You are offline. Some features may not work properly.');
+        throw new Error('You are offline. Some features may be limited.');
       }
       
       throw error;
@@ -251,7 +252,7 @@ function App() {
       setToken(result.token);
       localStorage.setItem('token', result.token);
       setUser(result.user);
-      setMessage('🎉 Successfully logged in! Welcome to WithRG X Dashboard.');
+      setMessage('🎉 Welcome to WithRG X Dashboard! Be Part of True Leadership.');
     } catch (error) {
       setMessage(error.message);
     } finally {
@@ -263,7 +264,7 @@ function App() {
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
-    setMessage('👋 Logged out successfully');
+    setMessage('👋 Logged out successfully. Thank you for being part of WithRG!');
   };
 
   const postTweet = async () => {
@@ -279,7 +280,7 @@ function App() {
         })
       });
       
-      setMessage(`🚀 Tweet posted successfully!`);
+      setMessage(`🚀 Tweet posted successfully for WithRG campaign!`);
       setTweetText('');
       setSelectedHandles([]);
       fetchDashboardStats();
@@ -300,7 +301,7 @@ function App() {
         method: 'POST'
       });
       
-      setMessage(`🔄 Retweeted successfully!`);
+      setMessage(`🔄 Retweeted successfully for WithRG!`);
       setRetweetId('');
       fetchDashboardStats();
       fetchActivities();
@@ -358,7 +359,7 @@ function App() {
         body: JSON.stringify(handleData)
       });
       fetchHandles();
-      setMessage('✅ Handle added successfully!');
+      setMessage('✅ X/Twitter handle added successfully!');
     } catch (error) {
       setMessage(`❌ Failed to add handle: ${error.message}`);
     }
@@ -366,9 +367,9 @@ function App() {
 
   const getRoleColor = (role) => {
     switch (role) {
-      case 'super_admin': return 'bg-purple-100 text-purple-800';
-      case 'admin': return 'bg-blue-100 text-blue-800';
-      case 'poster': return 'bg-green-100 text-green-800';
+      case 'super_admin': return 'bg-gradient-to-r from-orange-500 to-red-600 text-white';
+      case 'admin': return 'bg-gradient-to-r from-blue-500 to-blue-600 text-white';
+      case 'poster': return 'bg-gradient-to-r from-green-500 to-green-600 text-white';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -377,24 +378,37 @@ function App() {
     return role.replace('_', ' ').toUpperCase();
   };
 
+  const getRoleIcon = (role) => {
+    switch (role) {
+      case 'super_admin': return <Crown className="h-3 w-3" />;
+      case 'admin': return <Shield className="h-3 w-3" />;
+      case 'poster': return <Users className="h-3 w-3" />;
+      default: return null;
+    }
+  };
+
   // Login/Register Form
   if (!token || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-orange-600 via-red-600 to-red-700 flex items-center justify-center p-4">
         <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23374151' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          backgroundImage: `url("https://customer-assets.emergentagent.com/job_withrg-x-dash/artifacts/vwh89cbe_Cover-Pic.jpeg")`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
         }}></div>
         
         <Card className="w-full max-w-md bg-white/10 backdrop-blur-lg border-white/20 shadow-2xl">
           <CardHeader className="text-center space-y-4">
             <div className="flex items-center justify-center space-x-2">
-              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                <Twitter className="h-6 w-6 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-white">WithRG X Dashboard</h1>
+              <img 
+                src="https://customer-assets.emergentagent.com/job_withrg-x-dash/artifacts/t2uvs7gh_WithRG%20logo.png" 
+                alt="WithRG Logo" 
+                className="h-12 w-auto"
+              />
             </div>
-            <p className="text-gray-300">Professional Twitter Management Platform</p>
-            <p className="text-sm text-gray-400">📱 Install as app for easy access</p>
+            <h1 className="text-2xl font-bold text-white">WithRG X Dashboard</h1>
+            <p className="text-gray-200">Be Part of True Leadership</p>
+            <p className="text-sm text-yellow-200">📱 Install as app for easy campaign access</p>
           </CardHeader>
           
           <CardContent className="space-y-4">
@@ -421,7 +435,7 @@ function App() {
                   placeholder="Full Name"
                   value={authData.name}
                   onChange={(e) => setAuthData({...authData, name: e.target.value})}
-                  className="bg-white/10 border-white/20 text-white placeholder-gray-400"
+                  className="bg-white/10 border-white/20 text-white placeholder-gray-300"
                   required
                 />
               )}
@@ -431,7 +445,7 @@ function App() {
                 placeholder="Email"
                 value={authData.email}
                 onChange={(e) => setAuthData({...authData, email: e.target.value})}
-                className="bg-white/10 border-white/20 text-white placeholder-gray-400"
+                className="bg-white/10 border-white/20 text-white placeholder-gray-300"
                 required
               />
               
@@ -440,7 +454,7 @@ function App() {
                 placeholder="Password"
                 value={authData.password}
                 onChange={(e) => setAuthData({...authData, password: e.target.value})}
-                className="bg-white/10 border-white/20 text-white placeholder-gray-400"
+                className="bg-white/10 border-white/20 text-white placeholder-gray-300"
                 required
               />
 
@@ -450,15 +464,15 @@ function App() {
                   onChange={(e) => setAuthData({...authData, role: e.target.value})}
                   className="w-full p-2 rounded-md bg-white/10 border border-white/20 text-white"
                 >
-                  <option value="poster" className="text-black">Poster</option>
-                  <option value="admin" className="text-black">Admin</option>
-                  <option value="super_admin" className="text-black">Super Admin</option>
+                  <option value="poster" className="text-black">Campaign Poster</option>
+                  <option value="admin" className="text-black">Campaign Admin</option>
+                  <option value="super_admin" className="text-black">Campaign Leader</option>
                 </select>
               )}
 
               <Button 
                 type="submit" 
-                className="w-full bg-blue-600 hover:bg-blue-700" 
+                className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-semibold" 
                 disabled={loading}
               >
                 {loading ? (
@@ -466,24 +480,24 @@ function App() {
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     <span>Loading...</span>
                   </div>
-                ) : (isLogin ? 'Login' : 'Register')}
+                ) : (isLogin ? 'Join the Movement' : 'Register for WithRG')}
               </Button>
             </form>
 
             {message && (
-              <Alert className="bg-blue-500/20 border-blue-500/30">
-                <AlertDescription className="text-blue-200">{message}</AlertDescription>
+              <Alert className="bg-orange-500/20 border-orange-500/30">
+                <AlertDescription className="text-orange-100">{message}</AlertDescription>
               </Alert>
             )}
 
             {/* PWA Info */}
             <div className="text-center pt-4 border-t border-white/20">
-              <p className="text-xs text-gray-400 mb-2">💡 Pro Tip: Install this app for better experience</p>
+              <p className="text-xs text-gray-300 mb-2">💡 Install this app for better campaign management</p>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowPWAInfo(true)}
-                className="text-blue-400 hover:text-blue-300"
+                className="text-orange-200 hover:text-orange-100"
               >
                 <Smartphone className="h-4 w-4 mr-2" />
                 Learn More
@@ -503,7 +517,7 @@ function App() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-600">Install this app on your device for:</p>
+                <p className="text-gray-600">Install this campaign management app for:</p>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
@@ -511,11 +525,11 @@ function App() {
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Works offline</span>
+                    <span>Works offline during campaigns</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Push notifications</span>
+                    <span>Real-time campaign notifications</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
@@ -529,9 +543,8 @@ function App() {
                   <Button 
                     onClick={() => {
                       setShowPWAInfo(false);
-                      // Instructions will be shown after login
                     }} 
-                    className="flex-1"
+                    className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
                   >
                     Got it!
                   </Button>
@@ -552,9 +565,11 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                <Twitter className="h-5 w-5 text-white" />
-              </div>
+              <img 
+                src="https://customer-assets.emergentagent.com/job_withrg-x-dash/artifacts/t2uvs7gh_WithRG%20logo.png" 
+                alt="WithRG Logo" 
+                className="h-8 w-auto"
+              />
               <h1 className="text-xl font-bold text-gray-900">WithRG X Dashboard</h1>
               {!navigator.onLine && (
                 <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
@@ -570,18 +585,19 @@ function App() {
                   onClick={handleInstallPWA}
                   size="sm"
                   variant="outline"
-                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                  className="text-orange-600 border-orange-600 hover:bg-orange-50"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Install App
                 </Button>
               )}
               
-              <Badge className={getRoleColor(user.role)}>
-                {getRoleLabel(user.role)}
+              <Badge className={`${getRoleColor(user.role)} flex items-center space-x-1`}>
+                {getRoleIcon(user.role)}
+                <span>{getRoleLabel(user.role)}</span>
               </Badge>
               <Avatar>
-                <AvatarFallback className="bg-blue-500 text-white">
+                <AvatarFallback className="bg-gradient-to-r from-orange-500 to-red-600 text-white">
                   {user.name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
@@ -601,7 +617,7 @@ function App() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-blue-100">Total Tweets</p>
+                    <p className="text-blue-100">Campaign Tweets</p>
                     <p className="text-3xl font-bold">{dashboardStats.total_tweets}</p>
                     <p className="text-xs text-blue-200">This month</p>
                   </div>
@@ -614,7 +630,7 @@ function App() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-green-100">Total Retweets</p>
+                    <p className="text-green-100">Retweets</p>
                     <p className="text-3xl font-bold">{dashboardStats.total_retweets}</p>
                     <p className="text-xs text-green-200">This month</p>
                   </div>
@@ -627,7 +643,7 @@ function App() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-purple-100">Twitter Handles</p>
+                    <p className="text-purple-100">X Handles</p>
                     <p className="text-3xl font-bold">{dashboardStats.total_handles}</p>
                     <p className="text-xs text-purple-200">Connected</p>
                   </div>
@@ -636,13 +652,13 @@ function App() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-lg transition-shadow">
+            <Card className="bg-gradient-to-r from-orange-500 to-red-600 text-white hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-orange-100">Team Members</p>
+                    <p className="text-orange-100">Campaign Team</p>
                     <p className="text-3xl font-bold">{dashboardStats.total_users}</p>
-                    <p className="text-xs text-orange-200">Active users</p>
+                    <p className="text-xs text-orange-200">Active members</p>
                   </div>
                   <Users className="h-8 w-8 text-orange-200" />
                 </div>
@@ -664,7 +680,7 @@ function App() {
             </TabsTrigger>
             <TabsTrigger value="handles" className="flex items-center space-x-2 text-sm">
               <Link className="h-4 w-4" />
-              <span className="hidden sm:inline">Handles</span>
+              <span className="hidden sm:inline">X Handles</span>
             </TabsTrigger>
             <TabsTrigger value="analytics" className="flex items-center space-x-2 text-sm">
               <TrendingUp className="h-4 w-4" />
@@ -690,7 +706,7 @@ function App() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <TrendingUp className="h-5 w-5" />
-                    <span>Engagement Trends (7 Days)</span>
+                    <span>Campaign Engagement Trends (7 Days)</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -714,8 +730,8 @@ function App() {
                         <Area 
                           type="monotone" 
                           dataKey="engagement" 
-                          stroke="#3b82f6" 
-                          fill="#3b82f6" 
+                          stroke="#f97316" 
+                          fill="#f97316" 
                           fillOpacity={0.3}
                           strokeWidth={2}
                         />
@@ -726,7 +742,7 @@ function App() {
                       <div className="text-center">
                         <BarChart3 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                         <p>No engagement data yet</p>
-                        <p className="text-sm">Start posting to see trends</p>
+                        <p className="text-sm">Start posting to see campaign trends</p>
                       </div>
                     </div>
                   )}
@@ -738,7 +754,7 @@ function App() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Target className="h-5 w-5" />
-                    <span>Top Performing Handles</span>
+                    <span>Top Performing X Handles</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -748,9 +764,9 @@ function App() {
                         <div key={handle.handle_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                           <div className="flex items-center space-x-3">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
-                              index === 0 ? 'bg-yellow-500' : 
-                              index === 1 ? 'bg-gray-400' : 
-                              index === 2 ? 'bg-amber-600' : 'bg-blue-500'
+                              index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' : 
+                              index === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-400' : 
+                              index === 2 ? 'bg-gradient-to-r from-amber-500 to-amber-600' : 'bg-gradient-to-r from-orange-500 to-red-600'
                             }`}>
                               {index + 1}
                             </div>
@@ -760,7 +776,7 @@ function App() {
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="font-bold text-blue-600">{handle.engagement}</p>
+                            <p className="font-bold text-orange-600">{handle.engagement}</p>
                             <p className="text-sm text-gray-500">engagements</p>
                           </div>
                         </div>
@@ -768,8 +784,8 @@ function App() {
                     ) : (
                       <div className="text-center py-8 text-gray-500">
                         <Target className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                        <p>No handles connected yet</p>
-                        <p className="text-sm">Connect Twitter handles to see performance</p>
+                        <p>No X handles connected yet</p>
+                        <p className="text-sm">Connect campaign X accounts to see performance</p>
                       </div>
                     )}
                   </div>
@@ -782,43 +798,39 @@ function App() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Zap className="h-5 w-5" />
-                  <span>Quick Actions</span>
+                  <span>Quick Campaign Actions</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <Button 
                     onClick={() => setActiveTab('compose')} 
-                    className="h-20 flex-col space-y-2"
-                    variant="outline"
+                    className="h-20 flex-col space-y-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
                   >
                     <Send className="h-6 w-6" />
-                    <span>New Tweet</span>
+                    <span>New Campaign Tweet</span>
                   </Button>
                   <Button 
                     onClick={() => setActiveTab('analytics')} 
-                    className="h-20 flex-col space-y-2"
-                    variant="outline"
+                    className="h-20 flex-col space-y-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700"
                   >
                     <BarChart3 className="h-6 w-6" />
                     <span>View Analytics</span>
                   </Button>
                   <Button 
                     onClick={() => setActiveTab('handles')} 
-                    className="h-20 flex-col space-y-2"
-                    variant="outline"
+                    className="h-20 flex-col space-y-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
                   >
                     <Link className="h-6 w-6" />
-                    <span>Manage Handles</span>
+                    <span>Manage X Handles</span>
                   </Button>
                   {(user.role === 'super_admin' || user.role === 'admin') && (
                     <Button 
                       onClick={() => setActiveTab('admin')} 
-                      className="h-20 flex-col space-y-2"
-                      variant="outline"
+                      className="h-20 flex-col space-y-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
                     >
                       <Shield className="h-6 w-6" />
-                      <span>Admin Panel</span>
+                      <span>Campaign Admin</span>
                     </Button>
                   )}
                 </div>
@@ -832,14 +844,14 @@ function App() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Send className="h-5 w-5" />
-                  <span>Compose Tweet</span>
+                  <span>Compose Campaign Tweet</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Handle Selection */}
                 {handles.length > 0 && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Select Twitter Handles</label>
+                    <label className="text-sm font-medium text-gray-700">Select X/Twitter Handles</label>
                     <div className="flex flex-wrap gap-2">
                       {handles.map(handle => (
                         <Button
@@ -853,7 +865,7 @@ function App() {
                                 : [...prev, handle.id]
                             );
                           }}
-                          className="transition-all"
+                          className={`transition-all ${selectedHandles.includes(handle.id) ? 'bg-gradient-to-r from-orange-500 to-red-600' : ''}`}
                         >
                           <Twitter className="h-3 w-3 mr-1" />
                           {handle.screen_name}
@@ -861,13 +873,13 @@ function App() {
                       ))}
                     </div>
                     {selectedHandles.length === 0 && (
-                      <p className="text-sm text-gray-500">No handles selected - will post to main account</p>
+                      <p className="text-sm text-gray-500">No handles selected - will post to main WithRG account</p>
                     )}
                   </div>
                 )}
 
                 <Textarea
-                  placeholder="What's happening in your political campaign today?"
+                  placeholder="What's happening in your WithRG campaign today? Share your message for true leadership..."
                   value={tweetText}
                   onChange={(e) => setTweetText(e.target.value)}
                   className="min-h-[120px] resize-none text-lg"
@@ -882,7 +894,7 @@ function App() {
                       {tweetText.length}/280 characters
                     </span>
                     {selectedHandles.length > 0 && (
-                      <Badge variant="secondary">
+                      <Badge variant="secondary" className="bg-orange-100 text-orange-800">
                         Posting to {selectedHandles.length} handle{selectedHandles.length > 1 ? 's' : ''}
                       </Badge>
                     )}
@@ -890,14 +902,14 @@ function App() {
                   <Button 
                     onClick={postTweet} 
                     disabled={loading || !tweetText.trim()}
-                    className="bg-blue-500 hover:bg-blue-600 min-w-[120px]"
+                    className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 min-w-[120px]"
                   >
                     {loading ? (
                       <div className="flex items-center space-x-2">
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         <span>Posting...</span>
                       </div>
-                    ) : 'Post Tweet'}
+                    ) : 'Post Campaign Tweet'}
                   </Button>
                 </div>
               </CardContent>
@@ -908,7 +920,7 @@ function App() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Repeat className="h-5 w-5" />
-                  <span>Retweet</span>
+                  <span>Retweet for Campaign</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -922,7 +934,7 @@ function App() {
                   <Button 
                     onClick={handleRetweet} 
                     disabled={loading || !retweetId.trim()}
-                    className="bg-green-500 hover:bg-green-600 min-w-[100px]"
+                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 min-w-[100px]"
                   >
                     {loading ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -935,7 +947,7 @@ function App() {
                   </Button>
                 </div>
                 <p className="text-sm text-gray-500">
-                  💡 Tip: You can paste either a tweet ID (numbers only) or a full Twitter URL
+                  💡 Tip: You can paste either a tweet ID (numbers only) or a full X/Twitter URL
                 </p>
               </CardContent>
             </Card>
@@ -945,11 +957,11 @@ function App() {
           <TabsContent value="handles">
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Twitter Handles</h2>
+                <h2 className="text-2xl font-bold">Campaign X/Twitter Handles</h2>
                 {(user.role === 'super_admin' || user.role === 'admin') && (
-                  <Button onClick={() => setShowHandleModal(true)}>
+                  <Button onClick={() => setShowHandleModal(true)} className="bg-gradient-to-r from-orange-500 to-red-600">
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Handle
+                    Add X Handle
                   </Button>
                 )}
               </div>
@@ -960,7 +972,7 @@ function App() {
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold">
                             {handle.screen_name.charAt(1)}
                           </div>
                           <div>
@@ -986,7 +998,7 @@ function App() {
                         </div>
                         <div>
                           <p className="text-2xl font-bold">{handle.tweets_count}</p>
-                          <p className="text-sm text-gray-500">Tweets</p>
+                          <p className="text-sm text-gray-500">Posts</p>
                         </div>
                       </div>
 
@@ -1002,12 +1014,12 @@ function App() {
                 {handles.length === 0 && (
                   <div className="col-span-full text-center py-12">
                     <Link className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                    <h3 className="text-lg font-medium text-gray-500 mb-2">No Twitter handles connected</h3>
-                    <p className="text-gray-400 mb-4">Connect your first Twitter handle to start managing your social presence</p>
+                    <h3 className="text-lg font-medium text-gray-500 mb-2">No X handles connected</h3>
+                    <p className="text-gray-400 mb-4">Connect your campaign X handles to start managing your social presence</p>
                     {(user.role === 'super_admin' || user.role === 'admin') && (
-                      <Button onClick={() => setShowHandleModal(true)}>
+                      <Button onClick={() => setShowHandleModal(true)} className="bg-gradient-to-r from-orange-500 to-red-600">
                         <Plus className="h-4 w-4 mr-2" />
-                        Connect First Handle
+                        Connect First X Handle
                       </Button>
                     )}
                   </div>
@@ -1023,13 +1035,13 @@ function App() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <BarChart3 className="h-5 w-5" />
-                    <span>Tweet Analytics</span>
+                    <span>Campaign Tweet Analytics</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex space-x-2">
                     <Input
-                      placeholder="Enter Tweet ID for detailed analytics"
+                      placeholder="Enter Tweet ID for detailed campaign analytics"
                       value={analyticsId}
                       onChange={(e) => setAnalyticsId(e.target.value)}
                       className="flex-1"
@@ -1037,17 +1049,17 @@ function App() {
                     <Button 
                       onClick={getAnalytics} 
                       disabled={loading || !analyticsId.trim()}
-                      className="min-w-[120px]"
+                      className="min-w-[120px] bg-gradient-to-r from-purple-500 to-purple-600"
                     >
                       {loading ? (
-                        <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       ) : 'Get Analytics'}
                     </Button>
                   </div>
 
                   {analytics && (
-                    <div className="mt-6 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border">
-                      <h3 className="font-semibold mb-4 text-lg">Tweet Performance</h3>
+                    <div className="mt-6 p-6 bg-gradient-to-br from-orange-50 to-red-50 rounded-lg border border-orange-200">
+                      <h3 className="font-semibold mb-4 text-lg">Campaign Tweet Performance</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                         <div className="text-center p-3 bg-white rounded-lg shadow-sm">
                           <Heart className="h-6 w-6 text-red-500 mx-auto mb-2" />
@@ -1087,7 +1099,7 @@ function App() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Activity className="h-5 w-5" />
-                  <span>Activity Log</span>
+                  <span>Campaign Activity Log</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -1095,8 +1107,8 @@ function App() {
                   {activities.length === 0 ? (
                     <div className="text-center py-12">
                       <Activity className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                      <p className="text-gray-500 text-lg mb-2">No activities yet</p>
-                      <p className="text-gray-400">Your team's actions will appear here</p>
+                      <p className="text-gray-500 text-lg mb-2">No campaign activities yet</p>
+                      <p className="text-gray-400">Your team's campaign actions will appear here</p>
                     </div>
                   ) : (
                     activities.slice(0, 20).map((activity) => (
@@ -1106,7 +1118,7 @@ function App() {
                             activity.action.includes('tweet') ? 'bg-blue-100' : 
                             activity.action.includes('retweet') ? 'bg-green-100' : 
                             activity.action.includes('login') ? 'bg-purple-100' :
-                            activity.action.includes('registered') ? 'bg-yellow-100' :
+                            activity.action.includes('registered') ? 'bg-orange-100' :
                             'bg-gray-100'
                           }`}>
                             {activity.action.includes('tweet') ? (
@@ -1116,7 +1128,7 @@ function App() {
                             ) : activity.action.includes('login') ? (
                               <LogOut className="h-4 w-4 text-purple-600" />
                             ) : activity.action.includes('registered') ? (
-                              <UserPlus className="h-4 w-4 text-yellow-600" />
+                              <UserPlus className="h-4 w-4 text-orange-600" />
                             ) : (
                               <Activity className="h-4 w-4 text-gray-600" />
                             )}
@@ -1148,22 +1160,22 @@ function App() {
             </Card>
           </TabsContent>
 
-          {/* Admin Panel Tab */}
+          {/* Enhanced Admin Panel Tab */}
           {(user.role === 'super_admin' || user.role === 'admin') && (
             <TabsContent value="admin">
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold">Admin Panel</h2>
-                  <Button onClick={() => setShowUserModal(true)}>
+                  <h2 className="text-2xl font-bold">Campaign Administration</h2>
+                  <Button onClick={() => setShowUserModal(true)} className="bg-gradient-to-r from-orange-500 to-red-600">
                     <UserPlus className="h-4 w-4 mr-2" />
-                    Add User
+                    Add Team Member
                   </Button>
                 </div>
 
                 {/* Users Management */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Team Members</CardTitle>
+                    <CardTitle>Campaign Team Members</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -1171,7 +1183,7 @@ function App() {
                         <div key={usr.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                           <div className="flex items-center space-x-3">
                             <Avatar className="w-10 h-10">
-                              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                              <AvatarFallback className="bg-gradient-to-br from-orange-500 to-red-600 text-white">
                                 {usr.name.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
@@ -1186,8 +1198,9 @@ function App() {
                             </div>
                           </div>
                           <div className="flex items-center space-x-3">
-                            <Badge className={getRoleColor(usr.role)}>
-                              {getRoleLabel(usr.role)}
+                            <Badge className={`${getRoleColor(usr.role)} flex items-center space-x-1`}>
+                              {getRoleIcon(usr.role)}
+                              <span>{getRoleLabel(usr.role)}</span>
                             </Badge>
                             <div className="flex items-center space-x-1">
                               {usr.is_active ? (
@@ -1204,7 +1217,7 @@ function App() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setSelectedUser(usr)}
-                                title="Edit user"
+                                title="Edit team member"
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -1213,11 +1226,11 @@ function App() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => {
-                                    if (confirm(`Are you sure you want to delete ${usr.name}?`)) {
+                                    if (confirm(`Are you sure you want to remove ${usr.name} from the campaign team?`)) {
                                       deleteUser(usr.id);
                                     }
                                   }}
-                                  title="Delete user"
+                                  title="Remove from team"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -1230,7 +1243,7 @@ function App() {
                       {users.length === 0 && (
                         <div className="text-center py-8">
                           <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                          <p className="text-gray-500">No team members yet</p>
+                          <p className="text-gray-500">No campaign team members yet</p>
                           <p className="text-sm text-gray-400">Add team members to get started</p>
                         </div>
                       )}
@@ -1238,14 +1251,14 @@ function App() {
                   </CardContent>
                 </Card>
 
-                {/* System Stats */}
+                {/* Campaign Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-2">
-                        <Users className="h-5 w-5 text-blue-500" />
+                        <Users className="h-5 w-5 text-orange-500" />
                         <div>
-                          <p className="text-sm text-gray-600">Total Users</p>
+                          <p className="text-sm text-gray-600">Team Members</p>
                           <p className="text-xl font-bold">{users.length}</p>
                         </div>
                       </div>
@@ -1256,7 +1269,7 @@ function App() {
                       <div className="flex items-center space-x-2">
                         <Link className="h-5 w-5 text-purple-500" />
                         <div>
-                          <p className="text-sm text-gray-600">Connected Handles</p>
+                          <p className="text-sm text-gray-600">Connected X Handles</p>
                           <p className="text-xl font-bold">{handles.length}</p>
                         </div>
                       </div>
@@ -1281,8 +1294,8 @@ function App() {
 
         {/* Message Alert */}
         {message && (
-          <Alert className="mt-6 border-blue-200 bg-blue-50">
-            <AlertDescription className="text-blue-800">{message}</AlertDescription>
+          <Alert className="mt-6 border-orange-200 bg-orange-50">
+            <AlertDescription className="text-orange-800">{message}</AlertDescription>
           </Alert>
         )}
       </div>
@@ -1290,7 +1303,7 @@ function App() {
       {/* Offline Indicator */}
       {!navigator.onLine && (
         <div className="fixed bottom-4 left-4 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg">
-          ⚡ You're offline - some features may be limited
+          ⚡ You're offline - campaign data may be limited
         </div>
       )}
     </div>
