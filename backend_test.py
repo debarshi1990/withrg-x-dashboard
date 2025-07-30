@@ -357,14 +357,20 @@ class EnhancedWithRGAPITester:
         )
         
         # Test POST /handles/callback - OAuth callback (will fail without proper tokens, but endpoint should exist)
-        callback_url = "/handles/callback?oauth_token=dummy_token&oauth_verifier=dummy_verifier"
-        success, callback_result = self.api_call(callback_url, "POST", token=token, expected_status=400)
-        # We expect 400 because we're using dummy tokens, but the endpoint should exist
-        self.log_test(
-            "Twitter OAuth Callback", 
-            success,  # 400 is expected for dummy tokens
-            "- Endpoint exists (400 expected for dummy tokens)"
-        )
+        # Use direct requests call for query parameters
+        url = f"{self.base_url}/api/handles/callback?oauth_token=dummy_token&oauth_verifier=dummy_verifier"
+        headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+        
+        try:
+            response = self.session.post(url, headers=headers, timeout=15)
+            success = response.status_code == 400  # We expect 400 for dummy tokens
+            self.log_test(
+                "Twitter OAuth Callback", 
+                success,
+                "- Endpoint exists (400 expected for dummy tokens)"
+            )
+        except Exception as e:
+            self.log_test("Twitter OAuth Callback", False, f"- Error: {str(e)}")
         
         return True
 
