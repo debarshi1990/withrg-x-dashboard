@@ -1161,7 +1161,7 @@ function App() {
                             ) : activity.action.includes('login') ? (
                               <LogOut className="h-4 w-4 text-purple-600" />
                             ) : activity.action.includes('registered') ? (
-                              <UserPlus className="h-4 w-4 text-orange-600" />
+                              <UserPlus className="h-4 w-4 text-blue-600" />
                             ) : (
                               <Activity className="h-4 w-4 text-gray-600" />
                             )}
