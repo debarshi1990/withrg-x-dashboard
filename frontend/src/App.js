@@ -1574,95 +1574,179 @@ function App() {
         </div>
       )}
 
-      {/* Edit User Modal */}
+      {/* Enhanced Edit User Modal with Handle Assignment */}
       {selectedUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md bg-white">
+          <Card className="w-full max-w-2xl bg-white max-h-[90vh] overflow-y-auto">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Edit className="h-5 w-5" />
-                <span>Edit Team Member</span>
+                <span>Manage Team Member</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                const updates = {
-                  name: formData.get('name'),
-                  role: formData.get('role'),
-                  is_active: formData.get('is_active') === 'on'
-                };
+            <CardContent className="space-y-6">
+              {/* Basic Info Section */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.target);
+                  const updates = {
+                    name: formData.get('name'),
+                    role: formData.get('role'),
+                    is_active: formData.get('is_active') === 'on'
+                  };
+                  
+                  updateUser(selectedUser.id, updates);
+                  setSelectedUser(null);
+                }} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Full Name</label>
+                      <Input
+                        name="name"
+                        defaultValue={selectedUser.name}
+                        required
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Email</label>
+                      <Input
+                        value={selectedUser.email}
+                        disabled
+                        className="mt-1 bg-gray-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Campaign Role</label>
+                      <select
+                        name="role"
+                        defaultValue={selectedUser.role}
+                        required
+                        className="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="poster">Campaign Poster</option>
+                        <option value="admin">Campaign Admin</option>
+                        {user?.role === 'super_admin' && (
+                          <option value="super_admin">Campaign Leader</option>
+                        )}
+                      </select>
+                    </div>
+
+                    <div className="flex items-center space-x-2 mt-6">
+                      <input
+                        type="checkbox"
+                        id="is_active"
+                        name="is_active"
+                        defaultChecked={selectedUser.is_active}
+                        className="rounded"
+                      />
+                      <label htmlFor="is_active" className="text-sm font-medium text-gray-700">
+                        Active team member
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <Button 
+                      type="submit" 
+                      className="bg-gradient-to-r from-blue-500 to-blue-600"
+                      disabled={loading}
+                    >
+                      {loading ? 'Saving...' : 'Update Member'}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Handle Assignment Section */}
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-semibold mb-4">X/Twitter Handle Access</h3>
                 
-                updateUser(selectedUser.id, updates);
-                setSelectedUser(null);
-              }} className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Full Name</label>
-                  <Input
-                    name="name"
-                    defaultValue={selectedUser.name}
-                    required
-                    className="mt-1"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Email</label>
-                  <Input
-                    value={selectedUser.email}
-                    disabled
-                    className="mt-1 bg-gray-100"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Campaign Role</label>
-                  <select
-                    name="role"
-                    defaultValue={selectedUser.role}
-                    required
-                    className="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500"
-                  >
-                    <option value="poster">Campaign Poster</option>
-                    <option value="admin">Campaign Admin</option>
-                    {user.role === 'super_admin' && (
-                      <option value="super_admin">Campaign Leader</option>
-                    )}
-                  </select>
+                {/* Current Handles */}
+                <div className="mb-4">
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Currently Assigned Handles</label>
+                  {selectedUser.handles && selectedUser.handles.length > 0 ? (
+                    <div className="space-y-2">
+                      {selectedUser.handles.map(handle => (
+                        <div key={handle.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <Twitter className="h-4 w-4 text-blue-500" />
+                            <span className="font-medium">{handle.screen_name}</span>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              if (window.confirm(`Remove access to ${handle.screen_name}?`)) {
+                                revokeHandleFromUser(selectedUser.id, handle.id);
+                              }
+                            }}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500 bg-gray-50 rounded-lg">
+                      No handles assigned yet
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="is_active"
-                    name="is_active"
-                    defaultChecked={selectedUser.is_active}
-                    className="rounded"
-                  />
-                  <label htmlFor="is_active" className="text-sm font-medium text-gray-700">
-                    Active team member
-                  </label>
+                {/* Available Handles */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Available Handles</label>
+                  {handles.filter(handle => 
+                    !selectedUser.handles?.some(userHandle => userHandle.id === handle.id)
+                  ).length > 0 ? (
+                    <div className="space-y-2">
+                      {handles.filter(handle => 
+                        !selectedUser.handles?.some(userHandle => userHandle.id === handle.id)
+                      ).map(handle => (
+                        <div key={handle.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <Twitter className="h-4 w-4 text-blue-500" />
+                            <span className="font-medium">{handle.screen_name}</span>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => assignHandleToUser(selectedUser.id, handle.id)}
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Assign
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500 bg-gray-50 rounded-lg">
+                      All handles are already assigned to this member
+                    </div>
+                  )}
                 </div>
+              </div>
 
-                <div className="flex space-x-2">
-                  <Button 
-                    type="button" 
-                    onClick={() => setSelectedUser(null)} 
-                    variant="outline" 
-                    className="flex-1"
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600"
-                    disabled={loading}
-                  >
-                    {loading ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </div>
-              </form>
+              {/* Action Buttons */}
+              <div className="flex space-x-2 pt-4 border-t">
+                <Button 
+                  type="button" 
+                  onClick={() => setSelectedUser(null)} 
+                  variant="outline" 
+                  className="flex-1"
+                >
+                  Close
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
