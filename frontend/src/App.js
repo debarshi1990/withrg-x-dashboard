@@ -1300,117 +1300,118 @@ function App() {
         )}
       </div>
 
-      {/* Add Handle Modal */}
+      {/* Add Handle Modal - Twitter OAuth */}
       {showHandleModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-white">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Plus className="h-5 w-5" />
-                <span>Add X/Twitter Handle</span>
+                <Twitter className="h-5 w-5" />
+                <span>Connect X/Twitter Account</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                const handleData = {
-                  handle_name: formData.get('handle_name'),
-                  screen_name: formData.get('screen_name'),
-                  twitter_id: formData.get('twitter_id') || Math.floor(Math.random() * 1000000000).toString(),
-                  access_token: 'demo_token_' + Date.now(),
-                  access_token_secret: 'demo_secret_' + Date.now(),
-                  followers_count: parseInt(formData.get('followers_count')) || 0,
-                  following_count: parseInt(formData.get('following_count')) || 0,
-                  tweets_count: parseInt(formData.get('tweets_count')) || 0
-                };
-                addHandle(handleData);
-                setShowHandleModal(false);
-              }} className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Handle Name</label>
-                  <Input
-                    name="handle_name"
-                    placeholder="e.g., WithRG Official"
-                    required
-                    className="mt-1"
-                  />
+              <div className="text-center space-y-4">
+                <div className="flex justify-center">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Twitter className="h-8 w-8 text-blue-600" />
+                  </div>
                 </div>
                 
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Screen Name</label>
-                  <Input
-                    name="screen_name"
-                    placeholder="e.g., @WithRGOfficial"
-                    required
-                    className="mt-1"
-                  />
+                  <h3 className="text-lg font-semibold text-gray-900">Authorize X/Twitter Account</h3>
+                  <p className="text-sm text-gray-600 mt-2">
+                    You'll be redirected to X/Twitter to authorize this application to manage your account.
+                  </p>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Twitter ID (Optional)</label>
-                  <Input
-                    name="twitter_id"
-                    placeholder="e.g., 1234567890 (auto-generated if empty)"
-                    className="mt-1"
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Followers</label>
-                    <Input
-                      name="followers_count"
-                      type="number"
-                      placeholder="0"
-                      min="0"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Following</label>
-                    <Input
-                      name="following_count"
-                      type="number"
-                      placeholder="0"
-                      min="0"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Posts</label>
-                    <Input
-                      name="tweets_count"
-                      type="number"
-                      placeholder="0"
-                      min="0"
-                      className="mt-1"
-                    />
+                <div className="bg-blue-50 p-4 rounded-lg text-sm">
+                  <div className="flex items-start space-x-2">
+                    <Shield className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div className="text-blue-800">
+                      <p className="font-medium">Secure OAuth Process</p>
+                      <p>We only request the minimum permissions needed for posting and analytics.</p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800">
-                  <p><strong>Note:</strong> In production, this would connect via Twitter OAuth. For demo purposes, sample credentials will be used.</p>
-                </div>
-
-                <div className="flex space-x-2">
+                <div className="space-y-3">
                   <Button 
-                    type="button" 
-                    onClick={() => setShowHandleModal(false)} 
-                    variant="outline" 
-                    className="flex-1"
+                    onClick={async () => {
+                      setLoading(true);
+                      try {
+                        const result = await apiCall('/handles/connect', {
+                          method: 'POST'
+                        });
+                        
+                        if (result.authorization_url) {
+                          // Open Twitter OAuth in new window
+                          window.open(result.authorization_url, 'twitter_oauth', 'width=600,height=600');
+                          setMessage('🔄 Please complete authorization in the popup window...');
+                        } else {
+                          setMessage('⚠️ Twitter OAuth is configured but requires approved callback URL. Handle will be added with demo data.');
+                          // Fallback to manual addition for demo
+                          const demoHandle = {
+                            handle_name: `demo_handle_${Date.now()}`,
+                            screen_name: `@demo_${Date.now()}`,
+                            twitter_id: `demo_${Date.now()}`,
+                            followers_count: Math.floor(Math.random() * 1000),
+                            following_count: Math.floor(Math.random() * 500),
+                            tweets_count: Math.floor(Math.random() * 2000)
+                          };
+                          
+                          await addHandle(demoHandle);
+                        }
+                        
+                        setShowHandleModal(false);
+                      } catch (error) {
+                        if (error.message.includes('callback URL')) {
+                          setMessage('⚠️ Twitter OAuth requires approved callback. Adding demo handle instead...');
+                          
+                          // Add demo handle when OAuth isn't fully configured
+                          const demoHandle = {
+                            handle_name: `demo_handle_${Date.now()}`,
+                            screen_name: `@demo_${Date.now()}`,
+                            twitter_id: `demo_${Date.now()}`,
+                            followers_count: Math.floor(Math.random() * 1000),
+                            following_count: Math.floor(Math.random() * 500),
+                            tweets_count: Math.floor(Math.random() * 2000)
+                          };
+                          
+                          await addHandle(demoHandle);
+                          setShowHandleModal(false);
+                        } else {
+                          setMessage(`❌ Failed to initiate OAuth: ${error.message}`);
+                        }
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Connecting...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <Twitter className="h-4 w-4" />
+                        <span>Connect with X/Twitter</span>
+                      </div>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => setShowHandleModal(false)}
+                    variant="outline"
+                    className="w-full"
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    type="submit" 
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600"
-                    disabled={loading}
-                  >
-                    {loading ? 'Adding...' : 'Add Handle'}
-                  </Button>
                 </div>
-              </form>
+              </div>
             </CardContent>
           </Card>
         </div>
