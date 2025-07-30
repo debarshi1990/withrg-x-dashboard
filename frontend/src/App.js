@@ -194,10 +194,17 @@ function App() {
 
   const fetchUsers = async () => {
     try {
-      const usersData = await apiCall('/users');
-      setUsers(usersData);
+      const usersData = await apiCall('/team/members');
+      setUsers(usersData.members || []);
     } catch (error) {
       console.error('Failed to fetch users:', error);
+      // Fallback to old endpoint if new one fails
+      try {
+        const fallbackData = await apiCall('/users');
+        setUsers(fallbackData);
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+      }
     }
   };
 
