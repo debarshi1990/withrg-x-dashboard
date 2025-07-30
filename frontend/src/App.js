@@ -347,6 +347,32 @@ function App() {
     }
   };
 
+  const assignHandleToUser = async (userId, handleId) => {
+    try {
+      await apiCall('/team/assign-handle', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, handle_id: handleId })
+      });
+      fetchUsers();
+      setMessage('✅ Handle assigned successfully!');
+    } catch (error) {
+      setMessage(`❌ Failed to assign handle: ${error.message}`);
+    }
+  };
+
+  const revokeHandleFromUser = async (userId, handleId) => {
+    try {
+      await apiCall('/team/assign-handle', {
+        method: 'DELETE',
+        body: JSON.stringify({ user_id: userId, handle_id: handleId })
+      });
+      fetchUsers();
+      setMessage('✅ Handle access revoked successfully!');
+    } catch (error) {
+      setMessage(`❌ Failed to revoke handle access: ${error.message}`);
+    }
+  };
+
   const deleteUser = async (userId) => {
     try {
       await apiCall(`/team/members/${userId}`, {
