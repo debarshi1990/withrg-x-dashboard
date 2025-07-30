@@ -1511,7 +1511,7 @@ function App() {
                   </Button>
                   <Button 
                     type="submit" 
-                    className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600"
                     disabled={loading}
                   >
                     {loading ? 'Adding...' : 'Add Team Member'}
