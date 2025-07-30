@@ -10,7 +10,7 @@ import os
 from datetime import datetime
 
 # Configuration
-API_BASE = "https://ca9424bc-b8a9-4f90-ac2d-ad982fedb010.preview.emergentagent.com/api"
+API_BASE = "https://de7c82b6-d23b-489c-a63b-fcd7f850869d.preview.emergentagent.com/api"
 # For production: API_BASE = "https://withrg-x-dashboard.com/api"
 
 def create_campaign_admin_accounts():
@@ -170,7 +170,7 @@ def generate_campaign_credentials_file(accounts):
     
     credentials_content = f"""# WithRG X Dashboard - Campaign Team Credentials
 # Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-# Platform: https://ca9424bc-b8a9-4f90-ac2d-ad982fedb010.preview.emergentagent.com
+# Platform: https://de7c82b6-d23b-489c-a63b-fcd7f850869d.preview.emergentagent.com
 # Production: https://withrg-x-dashboard.com (when deployed)
 
 ## 🏛️ WITHRG CAMPAIGN TEAM ACCOUNTS
@@ -240,7 +240,7 @@ def generate_campaign_credentials_file(accounts):
 ## 📱 INSTALLATION INSTRUCTIONS
 
 ### For Campaign Team Members:
-1. **Visit:** https://ca9424bc-b8a9-4f90-ac2d-ad982fedb010.preview.emergentagent.com
+1. **Visit:** https://de7c82b6-d23b-489c-a63b-fcd7f850869d.preview.emergentagent.com
 2. **Login** with your credentials above
 3. **Install App:** Look for "Install App" button or browser prompt
 4. **Add to Home Screen:** Creates native app experience
@@ -365,7 +365,7 @@ def main():
             print("4. Begin campaign coordination!")
             
             print(f"\n📱 CAMPAIGN PLATFORM URL:")
-            print("Preview: https://ca9424bc-b8a9-4f90-ac2d-ad982fedb010.preview.emergentagent.com")
+            print("Preview: https://de7c82b6-d23b-489c-a63b-fcd7f850869d.preview.emergentagent.com")
             print("Production: https://withrg-x-dashboard.com (after deployment)")
             
         else:

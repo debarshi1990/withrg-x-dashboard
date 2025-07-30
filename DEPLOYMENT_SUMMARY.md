@@ -37,7 +37,7 @@ Your WithRG X Dashboard has been successfully converted to a **Progressive Web A
 
 ### **Current Preview URL:**
 ```
-https://ca9424bc-b8a9-4f90-ac2d-ad982fedb010.preview.emergentagent.com
+https://de7c82b6-d23b-489c-a63b-fcd7f850869d.preview.emergentagent.com
 ```
 
 ### **Production Deployment Options:**
@@ -113,7 +113,7 @@ Welcome to the WithRG Political Twitter Management Team!
 
 🚀 QUICK INSTALL:
 1. Scan this QR code with your phone OR click: 
-   https://ca9424bc-b8a9-4f90-ac2d-ad982fedb010.preview.emergentagent.com
+   https://de7c82b6-d23b-489c-a63b-fcd7f850869d.preview.emergentagent.com
 
 2. When website opens, look for "Install App" button
 3. Add to your phone's home screen - it works like a native app!

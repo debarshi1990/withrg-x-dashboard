@@ -15,7 +15,7 @@ The WithRG X Dashboard has been successfully converted to a **Progressive Web Ap
 ✅ **Production Ready** - Optimized for deployment  
 
 **Live Preview URL:** 
-`https://ca9424bc-b8a9-4f90-ac2d-ad982fedb010.preview.emergentagent.com`
+`https://de7c82b6-d23b-489c-a63b-fcd7f850869d.preview.emergentagent.com`
 
 ---
 
@@ -99,7 +99,7 @@ The WithRG X Dashboard has been successfully converted to a **Progressive Web Ap
 ### **Method 2: Direct URL Sharing**
 
 Send team members this URL:
-`https://ca9424bc-b8a9-4f90-ac2d-ad982fedb010.preview.emergentagent.com`
+`https://de7c82b6-d23b-489c-a63b-fcd7f850869d.preview.emergentagent.com`
 
 **Installation Instructions:**
 - **Android Chrome:** Look for "Add to Home Screen" or Install prompt
@@ -116,7 +116,7 @@ Hi [Name],
 You've been added to the WithRG Political Twitter Management Team!
 
 🚀 INSTALL THE APP:
-1. Click: https://ca9424bc-b8a9-4f90-ac2d-ad982fedb010.preview.emergentagent.com
+1. Click: https://de7c82b6-d23b-489c-a63b-fcd7f850869d.preview.emergentagent.com
 2. When the page loads, look for "Install App" button
 3. Add to your phone's home screen
 

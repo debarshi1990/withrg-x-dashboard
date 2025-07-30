@@ -12,7 +12,7 @@ import base64
 
 # App configuration
 APP_NAME = "WithRG X Dashboard"
-APP_URL = "https://ca9424bc-b8a9-4f90-ac2d-ad982fedb010.preview.emergentagent.com"
+APP_URL = "https://de7c82b6-d23b-489c-a63b-fcd7f850869d.preview.emergentagent.com"
 APP_DESCRIPTION = "Political Twitter Management Platform"
 
 def generate_basic_qr():

@@ -28,7 +28,7 @@ The **WithRG X Dashboard** is now fully branded and ready for production deploym
 
 **Live Branded Preview:** 
 ```
-https://ca9424bc-b8a9-4f90-ac2d-ad982fedb010.preview.emergentagent.com
+https://de7c82b6-d23b-489c-a63b-fcd7f850869d.preview.emergentagent.com
 ```
 
 **Ready for Production:** ✅ Fully branded and functional

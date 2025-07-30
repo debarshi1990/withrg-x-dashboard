@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 class EnhancedWithRGAPITester:
-    def __init__(self, base_url="https://ca9424bc-b8a9-4f90-ac2d-ad982fedb010.preview.emergentagent.com"):
+    def __init__(self, base_url="https://de7c82b6-d23b-489c-a63b-fcd7f850869d.preview.emergentagent.com"):
         self.base_url = base_url
         self.tokens = {}  # Store tokens for different roles
         self.users = {}   # Store user data for different roles

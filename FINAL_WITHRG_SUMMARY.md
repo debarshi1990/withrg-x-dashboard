@@ -39,7 +39,7 @@
 
 ### **Current Live URL:**
 ```
-https://ca9424bc-b8a9-4f90-ac2d-ad982fedb010.preview.emergentagent.com
+https://de7c82b6-d23b-489c-a63b-fcd7f850869d.preview.emergentagent.com
 ```
 
 ### **Production Domain Ready:**
@@ -189,7 +189,7 @@ withrg-x-dashboard.com (ready for deployment)
 ## 🚀 **IMMEDIATE NEXT STEPS**
 
 ### **1. Test the Platform Right Now:**
-1. Visit: https://ca9424bc-b8a9-4f90-ac2d-ad982fedb010.preview.emergentagent.com
+1. Visit: https://de7c82b6-d23b-489c-a63b-fcd7f850869d.preview.emergentagent.com
 2. Login as Campaign Leader: leader@withrg.org / WithRG2025Leader!
 3. Explore all 6 tabs: Dashboard, Compose, X Handles, Analytics, Activity, Admin
 4. Test posting campaign tweets
