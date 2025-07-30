@@ -770,6 +770,194 @@ async def get_tweet_analytics(tweet_id: str, current_user: User = Depends(get_cu
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to get analytics: {str(e)}")
 
+# Team Management Endpoints
+@api_router.post("/team/members")
+async def add_team_member(
+    user_data: UserCreate,
+    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.SUPER_ADMIN]))
+):
+    # Check if user already exists
+    existing_user = await db.users.find_one({"email": user_data.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="User with this email already exists")
+    
+    # Hash password and create user
+    hashed_password = hash_password(user_data.password)
+    user = User(
+        email=user_data.email,
+        name=user_data.name,
+        role=user_data.role
+    )
+    
+    user_dict = user.dict()
+    user_dict["password"] = hashed_password
+    
+    await db.users.insert_one(user_dict)
+    
+    await log_activity(
+        current_user.id,
+        "team_member_added",
+        {"new_user_email": user_data.email, "role": user_data.role}
+    )
+    
+    # Remove password from response
+    user_dict.pop("password", None)
+    return {"message": "Team member added successfully", "user": user_dict}
+
+@api_router.get("/team/members")
+async def get_team_members(
+    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.SUPER_ADMIN]))
+):
+    users = await db.users.find(
+        {"is_active": True}, 
+        {"password": 0}  # Exclude password field
+    ).to_list(1000)
+    
+    # Get handle information for each user
+    for user in users:
+        if user.get("assigned_handles"):
+            handles = await db.twitter_handles.find(
+                {"id": {"$in": user["assigned_handles"]}}
+            ).to_list(1000)
+            user["handles"] = [{"id": h["id"], "screen_name": h["screen_name"]} for h in handles]
+        else:
+            user["handles"] = []
+    
+    return {"members": users}
+
+@api_router.put("/team/members/{user_id}")
+async def update_team_member(
+    user_id: str,
+    updates: UserUpdate,
+    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.SUPER_ADMIN]))
+):
+    # Don't allow updating own permissions unless super admin
+    if user_id == current_user.id and current_user.role != UserRole.SUPER_ADMIN:
+        if updates.role and updates.role != current_user.role:
+            raise HTTPException(status_code=403, detail="Cannot change your own role")
+    
+    update_data = {k: v for k, v in updates.dict().items() if v is not None}
+    
+    if update_data:
+        result = await db.users.update_one(
+            {"id": user_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        await log_activity(
+            current_user.id,
+            "team_member_updated",
+            {"updated_user_id": user_id, "changes": update_data}
+        )
+    
+    return {"message": "Team member updated successfully"}
+
+@api_router.delete("/team/members/{user_id}")
+async def remove_team_member(
+    user_id: str,
+    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.SUPER_ADMIN]))
+):
+    # Don't allow deleting yourself
+    if user_id == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot delete your own account")
+    
+    # Soft delete by setting is_active to False
+    result = await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"is_active": False}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    await log_activity(
+        current_user.id,
+        "team_member_removed",
+        {"removed_user_id": user_id}
+    )
+    
+    return {"message": "Team member removed successfully"}
+
+@api_router.post("/team/assign-handle")
+async def assign_handle_to_member(
+    assignment: dict,
+    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.SUPER_ADMIN]))
+):
+    user_id = assignment.get("user_id")
+    handle_id = assignment.get("handle_id")
+    
+    if not user_id or not handle_id:
+        raise HTTPException(status_code=400, detail="user_id and handle_id are required")
+    
+    # Check if user and handle exist
+    user = await db.users.find_one({"id": user_id, "is_active": True})
+    handle = await db.twitter_handles.find_one({"id": handle_id})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if not handle:
+        raise HTTPException(status_code=404, detail="Handle not found")
+    
+    # Add handle to user's assigned handles
+    current_handles = user.get("assigned_handles", [])
+    if handle_id not in current_handles:
+        current_handles.append(handle_id)
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"assigned_handles": current_handles}}
+        )
+    
+    # Add user to handle's assigned users
+    current_users = handle.get("assigned_users", [])
+    if user_id not in current_users:
+        current_users.append(user_id)
+        await db.twitter_handles.update_one(
+            {"id": handle_id},
+            {"$set": {"assigned_users": current_users}}
+        )
+    
+    await log_activity(
+        current_user.id,
+        "handle_assigned",
+        {"user_id": user_id, "handle_id": handle_id, "handle_name": handle["screen_name"]}
+    )
+    
+    return {"message": "Handle assigned successfully"}
+
+@api_router.delete("/team/assign-handle")
+async def revoke_handle_from_member(
+    assignment: dict,
+    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.SUPER_ADMIN]))
+):
+    user_id = assignment.get("user_id")
+    handle_id = assignment.get("handle_id")
+    
+    if not user_id or not handle_id:
+        raise HTTPException(status_code=400, detail="user_id and handle_id are required")
+    
+    # Remove handle from user's assigned handles
+    await db.users.update_one(
+        {"id": user_id},
+        {"$pull": {"assigned_handles": handle_id}}
+    )
+    
+    # Remove user from handle's assigned users
+    await db.twitter_handles.update_one(
+        {"id": handle_id},
+        {"$pull": {"assigned_users": user_id}}
+    )
+    
+    await log_activity(
+        current_user.id,
+        "handle_revoked",
+        {"user_id": user_id, "handle_id": handle_id}
+    )
+    
+    return {"message": "Handle access revoked successfully"}
+
 @api_router.get("/")
 async def root():
     return {"message": "WithRG X Dashboard API - Enhanced", "status": "running", "version": "2.0"}
