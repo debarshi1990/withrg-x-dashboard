@@ -935,7 +935,7 @@ function App() {
                   <Button 
                     onClick={postTweet} 
                     disabled={loading || !tweetText.trim()}
-                    className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 min-w-[120px]"
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 min-w-[120px]"
                   >
                     {loading ? (
                       <div className="flex items-center space-x-2">
