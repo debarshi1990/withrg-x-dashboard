@@ -364,7 +364,7 @@ async def initiate_twitter_oauth(
         auth = tweepy.OAuthHandler(
             os.environ['TWITTER_API_KEY'],
             os.environ['TWITTER_API_SECRET'],
-            callback_url=f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/auth/twitter/callback"
+            callback=f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/auth/twitter/callback"
         )
         
         # Get authorization URL
