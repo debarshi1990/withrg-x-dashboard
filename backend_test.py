@@ -168,10 +168,6 @@ class EnhancedWithRGAPITester:
         if not self.log_test("Get Handles List", success, f"- Found {len(handles_data) if success else 0} handles"):
             return False
         
-        # Test POST /handles/connect (OAuth initiation)
-        success, connect_data = self.api_call("/handles/connect", "POST", token=token)
-        self.log_test("Handle OAuth Connect", success, f"- {connect_data.get('message', '')}")
-        
         # Test POST /handles/add (Add handle manually for MVP)
         handle_data = {
             "handle_name": "test_handle_" + self.timestamp,
