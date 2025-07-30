@@ -367,9 +367,9 @@ function App() {
 
   const getRoleColor = (role) => {
     switch (role) {
-      case 'super_admin': return 'bg-gradient-to-r from-orange-500 to-red-600 text-white';
+      case 'super_admin': return 'bg-gradient-to-r from-blue-600 to-blue-700 text-white';
       case 'admin': return 'bg-gradient-to-r from-blue-500 to-blue-600 text-white';
-      case 'poster': return 'bg-gradient-to-r from-green-500 to-green-600 text-white';
+      case 'poster': return 'bg-gradient-to-r from-blue-400 to-blue-500 text-white';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
