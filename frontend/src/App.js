@@ -898,7 +898,7 @@ function App() {
                                 : [...prev, handle.id]
                             );
                           }}
-                          className={`transition-all ${selectedHandles.includes(handle.id) ? 'bg-gradient-to-r from-orange-500 to-red-600' : ''}`}
+                          className={`transition-all ${selectedHandles.includes(handle.id) ? 'bg-gradient-to-r from-blue-500 to-blue-600' : ''}`}
                         >
                           <Twitter className="h-3 w-3 mr-1" />
                           {handle.screen_name}
