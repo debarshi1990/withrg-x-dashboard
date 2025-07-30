@@ -585,7 +585,7 @@ function App() {
                   onClick={handleInstallPWA}
                   size="sm"
                   variant="outline"
-                  className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Install App
