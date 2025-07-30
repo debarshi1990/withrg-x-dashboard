@@ -685,7 +685,7 @@ function App() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-r from-orange-500 to-red-600 text-white hover:shadow-lg transition-shadow">
+            <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
