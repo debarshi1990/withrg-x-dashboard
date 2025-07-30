@@ -1327,8 +1327,8 @@ function App() {
 
         {/* Message Alert */}
         {message && (
-          <Alert className="mt-6 border-orange-200 bg-orange-50">
-            <AlertDescription className="text-orange-800">{message}</AlertDescription>
+          <Alert className="mt-6 border-blue-200 bg-blue-50">
+            <AlertDescription className="text-blue-800">{message}</AlertDescription>
           </Alert>
         )}
       </div>
