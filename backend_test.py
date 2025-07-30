@@ -431,6 +431,8 @@ class EnhancedWithRGAPITester:
         # Enhanced feature tests
         self.test_user_management_endpoints()
         self.test_handle_management()
+        self.test_twitter_oauth_endpoints()  # New test
+        self.test_team_management_endpoints()  # New test
         self.test_analytics_endpoints()
         self.test_dashboard_stats()
         self.test_activity_logging()
