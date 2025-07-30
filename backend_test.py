@@ -283,6 +283,94 @@ class EnhancedWithRGAPITester:
         
         return True
 
+    def test_team_management_endpoints(self):
+        """Test new team management endpoints"""
+        if "super_admin" not in self.tokens:
+            return self.log_test("Team Management", False, "- No super_admin token")
+        
+        token = self.tokens["super_admin"]
+        
+        # Test POST /team/members - Add new team member
+        new_member_data = {
+            "email": f"team_member_{self.timestamp}@example.com",
+            "password": "TeamPass123!",
+            "name": "New Team Member",
+            "role": "poster"
+        }
+        
+        success, member_result = self.api_call("/team/members", "POST", new_member_data, token=token)
+        new_member_id = None
+        if success and "user" in member_result:
+            new_member_id = member_result["user"]["id"]
+            self.log_test("Add Team Member", True, f"- Member ID: {new_member_id}")
+        else:
+            self.log_test("Add Team Member", False, f"- {member_result}")
+        
+        # Test GET /team/members - Get all team members
+        success, members_data = self.api_call("/team/members", token=token)
+        self.log_test(
+            "Get Team Members", 
+            success and "members" in members_data,
+            f"- Found {len(members_data.get('members', [])) if success else 0} members"
+        )
+        
+        # Test PUT /team/members/{user_id} - Update team member
+        if new_member_id:
+            update_data = {"name": "Updated Team Member Name"}
+            success, _ = self.api_call(f"/team/members/{new_member_id}", "PUT", update_data, token=token)
+            self.log_test("Update Team Member", success, f"- Updated member {new_member_id}")
+        
+        # Test handle assignment endpoints
+        if self.handles and new_member_id:
+            handle_id = self.handles[0]["id"]
+            
+            # Test POST /team/assign-handle - Assign handle to user
+            assignment_data = {"user_id": new_member_id, "handle_id": handle_id}
+            success, _ = self.api_call("/team/assign-handle", "POST", assignment_data, token=token)
+            self.log_test("Assign Handle to Member", success, f"- Assigned handle {handle_id} to user {new_member_id}")
+            
+            # Test DELETE /team/assign-handle - Revoke handle from user
+            success, _ = self.api_call("/team/assign-handle", "DELETE", assignment_data, token=token)
+            self.log_test("Revoke Handle from Member", success, f"- Revoked handle {handle_id} from user {new_member_id}")
+        
+        # Test DELETE /team/members/{user_id} - Remove team member
+        if new_member_id:
+            success, _ = self.api_call(f"/team/members/{new_member_id}", "DELETE", token=token)
+            self.log_test("Remove Team Member", success, f"- Removed member {new_member_id}")
+        
+        return True
+
+    def test_twitter_oauth_endpoints(self):
+        """Test Twitter OAuth endpoints"""
+        if "super_admin" not in self.tokens:
+            return self.log_test("Twitter OAuth", False, "- No super_admin token")
+        
+        token = self.tokens["super_admin"]
+        
+        # Test POST /handles/connect - Initiate Twitter OAuth
+        success, connect_data = self.api_call("/handles/connect", "POST", token=token)
+        has_auth_url = "authorization_url" in connect_data if success else False
+        self.log_test(
+            "Twitter OAuth Connect", 
+            success and has_auth_url,
+            f"- Auth URL provided: {'Yes' if has_auth_url else 'No'}"
+        )
+        
+        # Test POST /handles/callback - OAuth callback (will fail without proper tokens, but endpoint should exist)
+        callback_data = {
+            "oauth_token": "dummy_token",
+            "oauth_verifier": "dummy_verifier"
+        }
+        success, callback_result = self.api_call("/handles/callback", "POST", callback_data, token=token, expected_status=400)
+        # We expect 400 because we're using dummy tokens, but the endpoint should exist
+        self.log_test(
+            "Twitter OAuth Callback", 
+            success,  # 400 is expected for dummy tokens
+            "- Endpoint exists (400 expected for dummy tokens)"
+        )
+        
+        return True
+
     def test_role_based_access(self):
         """Test role-based access control across different endpoints"""
         if not all(role in self.tokens for role in ["super_admin", "admin", "poster"]):
@@ -311,6 +399,13 @@ class EnhancedWithRGAPITester:
         for role in ["super_admin", "admin", "poster"]:
             success, _ = self.api_call("/me", token=self.tokens[role])
             test_results.append((f"{role} Access Profile", success))
+        
+        # Test 5: Team management endpoints require admin/super_admin
+        success, _ = self.api_call("/team/members", token=self.tokens["poster"], expected_status=403)
+        test_results.append(("Poster Denied Team Access", success))
+        
+        success, _ = self.api_call("/team/members", token=self.tokens["admin"])
+        test_results.append(("Admin Team Access", success))
         
         all_passed = all(result[1] for result in test_results)
         details = ", ".join([f"{name}: {'✓' if result else '✗'}" for name, result in test_results])
