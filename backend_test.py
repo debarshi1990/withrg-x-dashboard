@@ -48,7 +48,10 @@ class EnhancedWithRGAPITester:
             elif method == "PUT":
                 response = self.session.put(url, json=data, headers=headers, timeout=15)
             elif method == "DELETE":
-                response = self.session.delete(url, headers=headers, timeout=15)
+                if data:
+                    response = self.session.delete(url, json=data, headers=headers, timeout=15)
+                else:
+                    response = self.session.delete(url, headers=headers, timeout=15)
             else:
                 return False, {"error": f"Unsupported method: {method}"}
 
