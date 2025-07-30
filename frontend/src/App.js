@@ -1300,6 +1300,323 @@ function App() {
         )}
       </div>
 
+      {/* Add Handle Modal */}
+      {showHandleModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-white">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Plus className="h-5 w-5" />
+                <span>Add X/Twitter Handle</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const handleData = {
+                  handle_name: formData.get('handle_name'),
+                  screen_name: formData.get('screen_name'),
+                  twitter_id: formData.get('twitter_id') || Math.floor(Math.random() * 1000000000).toString(),
+                  access_token: 'demo_token_' + Date.now(),
+                  access_token_secret: 'demo_secret_' + Date.now(),
+                  followers_count: parseInt(formData.get('followers_count')) || 0,
+                  following_count: parseInt(formData.get('following_count')) || 0,
+                  tweets_count: parseInt(formData.get('tweets_count')) || 0
+                };
+                addHandle(handleData);
+                setShowHandleModal(false);
+              }} className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Handle Name</label>
+                  <Input
+                    name="handle_name"
+                    placeholder="e.g., WithRG Official"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Screen Name</label>
+                  <Input
+                    name="screen_name"
+                    placeholder="e.g., @WithRGOfficial"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Twitter ID (Optional)</label>
+                  <Input
+                    name="twitter_id"
+                    placeholder="e.g., 1234567890 (auto-generated if empty)"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Followers</label>
+                    <Input
+                      name="followers_count"
+                      type="number"
+                      placeholder="0"
+                      min="0"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Following</label>
+                    <Input
+                      name="following_count"
+                      type="number"
+                      placeholder="0"
+                      min="0"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Posts</label>
+                    <Input
+                      name="tweets_count"
+                      type="number"
+                      placeholder="0"
+                      min="0"
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800">
+                  <p><strong>Note:</strong> In production, this would connect via Twitter OAuth. For demo purposes, sample credentials will be used.</p>
+                </div>
+
+                <div className="flex space-x-2">
+                  <Button 
+                    type="button" 
+                    onClick={() => setShowHandleModal(false)} 
+                    variant="outline" 
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
+                    disabled={loading}
+                  >
+                    {loading ? 'Adding...' : 'Add Handle'}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Add User Modal */}
+      {showUserModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-white">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <UserPlus className="h-5 w-5" />
+                <span>Add Campaign Team Member</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const userData = {
+                  name: formData.get('name'),
+                  email: formData.get('email'),
+                  password: formData.get('password'),
+                  role: formData.get('role')
+                };
+                
+                // Create user via register endpoint
+                apiCall('/auth/register', {
+                  method: 'POST',
+                  body: JSON.stringify(userData)
+                }).then(() => {
+                  setMessage('✅ Campaign team member added successfully!');
+                  fetchUsers();
+                  setShowUserModal(false);
+                }).catch(error => {
+                  setMessage(`❌ Failed to add team member: ${error.message}`);
+                });
+              }} className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Full Name</label>
+                  <Input
+                    name="name"
+                    placeholder="e.g., Campaign Volunteer Name"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Email</label>
+                  <Input
+                    name="email"
+                    type="email"
+                    placeholder="e.g., volunteer@withrg.org"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Password</label>
+                  <Input
+                    name="password"
+                    type="password"
+                    placeholder="Temporary password (user should change)"
+                    required
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Campaign Role</label>
+                  <select
+                    name="role"
+                    required
+                    className="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="poster">Campaign Poster</option>
+                    <option value="admin">Campaign Admin</option>
+                    {user.role === 'super_admin' && (
+                      <option value="super_admin">Campaign Leader</option>
+                    )}
+                  </select>
+                </div>
+
+                <div className="bg-orange-50 p-3 rounded-lg text-sm text-orange-800">
+                  <p><strong>Note:</strong> The new team member will receive their credentials and can login immediately.</p>
+                </div>
+
+                <div className="flex space-x-2">
+                  <Button 
+                    type="button" 
+                    onClick={() => setShowUserModal(false)} 
+                    variant="outline" 
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
+                    disabled={loading}
+                  >
+                    {loading ? 'Adding...' : 'Add Team Member'}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {selectedUser && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-white">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Edit className="h-5 w-5" />
+                <span>Edit Team Member</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const updates = {
+                  name: formData.get('name'),
+                  role: formData.get('role'),
+                  is_active: formData.get('is_active') === 'on'
+                };
+                
+                updateUser(selectedUser.id, updates);
+                setSelectedUser(null);
+              }} className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Full Name</label>
+                  <Input
+                    name="name"
+                    defaultValue={selectedUser.name}
+                    required
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Email</label>
+                  <Input
+                    value={selectedUser.email}
+                    disabled
+                    className="mt-1 bg-gray-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Campaign Role</label>
+                  <select
+                    name="role"
+                    defaultValue={selectedUser.role}
+                    required
+                    className="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="poster">Campaign Poster</option>
+                    <option value="admin">Campaign Admin</option>
+                    {user.role === 'super_admin' && (
+                      <option value="super_admin">Campaign Leader</option>
+                    )}
+                  </select>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="is_active"
+                    name="is_active"
+                    defaultChecked={selectedUser.is_active}
+                    className="rounded"
+                  />
+                  <label htmlFor="is_active" className="text-sm font-medium text-gray-700">
+                    Active team member
+                  </label>
+                </div>
+
+                <div className="flex space-x-2">
+                  <Button 
+                    type="button" 
+                    onClick={() => setSelectedUser(null)} 
+                    variant="outline" 
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Offline Indicator */}
       {!navigator.onLine && (
         <div className="fixed bottom-4 left-4 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg">
