@@ -1289,7 +1289,7 @@ function App() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-2">
-                        <Users className="h-5 w-5 text-orange-500" />
+                        <Users className="h-5 w-5 text-blue-500" />
                         <div>
                           <p className="text-sm text-gray-600">Team Members</p>
                           <p className="text-xl font-bold">{users.length}</p>
