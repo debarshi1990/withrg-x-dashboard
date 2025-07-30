@@ -1417,7 +1417,7 @@ function App() {
         </div>
       )}
 
-      {/* Add User Modal */}
+      {/* Add User Modal - Team Management */}
       {showUserModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-white">
@@ -1428,27 +1428,33 @@ function App() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <form onSubmit={(e) => {
+              <form onSubmit={async (e) => {
                 e.preventDefault();
-                const formData = new FormData(e.target);
-                const userData = {
-                  name: formData.get('name'),
-                  email: formData.get('email'),
-                  password: formData.get('password'),
-                  role: formData.get('role')
-                };
+                setLoading(true);
                 
-                // Create user via register endpoint
-                apiCall('/auth/register', {
-                  method: 'POST',
-                  body: JSON.stringify(userData)
-                }).then(() => {
-                  setMessage('✅ Campaign team member added successfully!');
+                try {
+                  const formData = new FormData(e.target);
+                  const userData = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    password: formData.get('password'),
+                    role: formData.get('role')
+                  };
+                  
+                  // Use the new team management endpoint
+                  await apiCall('/team/members', {
+                    method: 'POST',
+                    body: JSON.stringify(userData)
+                  });
+                  
+                  setMessage('✅ Team member added successfully!');
                   fetchUsers();
                   setShowUserModal(false);
-                }).catch(error => {
+                } catch (error) {
                   setMessage(`❌ Failed to add team member: ${error.message}`);
-                });
+                } finally {
+                  setLoading(false);
+                }
               }} className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-gray-700">Full Name</label>
@@ -1479,6 +1485,7 @@ function App() {
                     placeholder="Temporary password (user should change)"
                     required
                     className="mt-1"
+                    minLength="8"
                   />
                 </div>
 
@@ -1487,18 +1494,28 @@ function App() {
                   <select
                     name="role"
                     required
-                    className="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500"
+                    className="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="poster">Campaign Poster</option>
                     <option value="admin">Campaign Admin</option>
-                    {user.role === 'super_admin' && (
+                    {user?.role === 'super_admin' && (
                       <option value="super_admin">Campaign Leader</option>
                     )}
                   </select>
                 </div>
 
-                <div className="bg-orange-50 p-3 rounded-lg text-sm text-orange-800">
-                  <p><strong>Note:</strong> The new team member will receive their credentials and can login immediately.</p>
+                <div className="bg-blue-50 p-3 rounded-lg text-sm">
+                  <div className="flex items-start space-x-2">
+                    <Shield className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div className="text-blue-800">
+                      <div className="font-medium">Role Permissions:</div>
+                      <ul className="mt-1 text-xs space-y-1">
+                        <li>• <strong>Campaign Poster:</strong> Post tweets, view assigned handles</li>
+                        <li>• <strong>Campaign Admin:</strong> Manage users, assign handles, view analytics</li>
+                        <li>• <strong>Campaign Leader:</strong> Full system access</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex space-x-2">
