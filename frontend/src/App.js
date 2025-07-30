@@ -336,14 +336,14 @@ function App() {
 
   const updateUser = async (userId, updates) => {
     try {
-      await apiCall(`/users/${userId}`, {
+      await apiCall(`/team/members/${userId}`, {
         method: 'PUT',
         body: JSON.stringify(updates)
       });
       fetchUsers();
-      setMessage('✅ User updated successfully!');
+      setMessage('✅ Team member updated successfully!');
     } catch (error) {
-      setMessage(`❌ Failed to update user: ${error.message}`);
+      setMessage(`❌ Failed to update team member: ${error.message}`);
     }
   };
 
