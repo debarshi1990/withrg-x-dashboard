@@ -7,6 +7,8 @@ import { Badge } from './components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Alert, AlertDescription } from './components/ui/alert';
 import { Avatar, AvatarFallback } from './components/ui/avatar';
+import { Switch } from './components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { 
   Twitter, 
   Send, 
@@ -18,8 +20,38 @@ import {
   Settings,
   LogOut,
   Activity,
-  TrendingUp
+  TrendingUp,
+  Plus,
+  UserPlus,
+  Shield,
+  Link,
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Calendar,
+  Target,
+  Zap
 } from 'lucide-react';
+import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  AreaChart,
+  Area
+} from 'recharts';
 import './App.css';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL;
@@ -35,7 +67,17 @@ function App() {
   const [analytics, setAnalytics] = useState(null);
   const [dashboardStats, setDashboardStats] = useState(null);
   const [activities, setActivities] = useState([]);
-  const [activeTab, setActiveTab] = useState('compose');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  
+  // New state for enhanced features
+  const [users, setUsers] = useState([]);
+  const [handles, setHandles] = useState([]);
+  const [selectedHandles, setSelectedHandles] = useState([]);
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [detailedAnalytics, setDetailedAnalytics] = useState(null);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [showHandleModal, setShowHandleModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   // Auth forms
   const [isLogin, setIsLogin] = useState(true);
@@ -51,8 +93,13 @@ function App() {
       fetchUser();
       fetchDashboardStats();
       fetchActivities();
+      fetchHandles();
+      fetchAnalytics();
+      if (user && (user.role === 'super_admin' || user.role === 'admin')) {
+        fetchUsers();
+      }
     }
-  }, [token]);
+  }, [token, user]);
 
   const apiCall = async (endpoint, options = {}) => {
     const url = `${API_BASE}/api${endpoint}`;
@@ -86,6 +133,33 @@ function App() {
     } catch (error) {
       setMessage('Failed to fetch user data');
       handleLogout();
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const usersData = await apiCall('/users');
+      setUsers(usersData);
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    }
+  };
+
+  const fetchHandles = async () => {
+    try {
+      const handlesData = await apiCall('/handles');
+      setHandles(handlesData);
+    } catch (error) {
+      console.error('Failed to fetch handles:', error);
+    }
+  };
+
+  const fetchAnalytics = async () => {
+    try {
+      const analyticsData = await apiCall('/analytics/dashboard');
+      setAnalyticsData(analyticsData);
+    } catch (error) {
+      console.error('Failed to fetch analytics:', error);
     }
   };
 
@@ -144,11 +218,15 @@ function App() {
     try {
       const result = await apiCall('/tweet', {
         method: 'POST',
-        body: JSON.stringify({ text: tweetText })
+        body: JSON.stringify({ 
+          text: tweetText,
+          handle_ids: selectedHandles.length > 0 ? selectedHandles : undefined
+        })
       });
       
-      setMessage(`Tweet posted successfully! ID: ${result.tweet_id}`);
+      setMessage(`Tweet posted successfully!`);
       setTweetText('');
+      setSelectedHandles([]);
       fetchDashboardStats();
       fetchActivities();
     } catch (error) {
@@ -167,7 +245,7 @@ function App() {
         method: 'POST'
       });
       
-      setMessage(`Retweeted successfully! ID: ${result.retweet_id}`);
+      setMessage(`Retweeted successfully!`);
       setRetweetId('');
       fetchDashboardStats();
       fetchActivities();
@@ -190,6 +268,44 @@ function App() {
       setMessage(`Failed to get analytics: ${error.message}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateUser = async (userId, updates) => {
+    try {
+      await apiCall(`/users/${userId}`, {
+        method: 'PUT',
+        body: JSON.stringify(updates)
+      });
+      fetchUsers();
+      setMessage('User updated successfully!');
+    } catch (error) {
+      setMessage(`Failed to update user: ${error.message}`);
+    }
+  };
+
+  const deleteUser = async (userId) => {
+    try {
+      await apiCall(`/users/${userId}`, {
+        method: 'DELETE'
+      });
+      fetchUsers();
+      setMessage('User deleted successfully!');
+    } catch (error) {
+      setMessage(`Failed to delete user: ${error.message}`);
+    }
+  };
+
+  const addHandle = async (handleData) => {
+    try {
+      await apiCall('/handles/add', {
+        method: 'POST',
+        body: JSON.stringify(handleData)
+      });
+      fetchHandles();
+      setMessage('Handle added successfully!');
+    } catch (error) {
+      setMessage(`Failed to add handle: ${error.message}`);
     }
   };
 
@@ -330,9 +446,9 @@ function App() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
+        {/* Enhanced Stats Cards */}
         {dashboardStats && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -361,37 +477,120 @@ function App() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-purple-100">Role</p>
-                    <p className="text-lg font-bold">{getRoleLabel(user.role)}</p>
+                    <p className="text-purple-100">Twitter Handles</p>
+                    <p className="text-3xl font-bold">{dashboardStats.total_handles}</p>
                   </div>
-                  <Users className="h-8 w-8 text-purple-200" />
+                  <Link className="h-8 w-8 text-purple-200" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-orange-100">Team Members</p>
+                    <p className="text-3xl font-bold">{dashboardStats.total_users}</p>
+                  </div>
+                  <Users className="h-8 w-8 text-orange-200" />
                 </div>
               </CardContent>
             </Card>
           </div>
         )}
 
-        {/* Main Content Tabs */}
+        {/* Enhanced Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white shadow-sm">
+          <TabsList className="grid w-full grid-cols-6 bg-white shadow-sm">
+            <TabsTrigger value="dashboard" className="flex items-center space-x-2">
+              <BarChart3 className="h-4 w-4" />
+              <span>Dashboard</span>
+            </TabsTrigger>
             <TabsTrigger value="compose" className="flex items-center space-x-2">
               <Send className="h-4 w-4" />
               <span>Compose</span>
             </TabsTrigger>
-            <TabsTrigger value="retweet" className="flex items-center space-x-2">
-              <Repeat className="h-4 w-4" />
-              <span>Retweet</span>
+            <TabsTrigger value="handles" className="flex items-center space-x-2">
+              <Link className="h-4 w-4" />
+              <span>Handles</span>
             </TabsTrigger>
             <TabsTrigger value="analytics" className="flex items-center space-x-2">
-              <BarChart3 className="h-4 w-4" />
+              <TrendingUp className="h-4 w-4" />
               <span>Analytics</span>
             </TabsTrigger>
             <TabsTrigger value="activity" className="flex items-center space-x-2">
               <Activity className="h-4 w-4" />
               <span>Activity</span>
             </TabsTrigger>
+            {(user.role === 'super_admin' || user.role === 'admin') && (
+              <TabsTrigger value="admin" className="flex items-center space-x-2">
+                <Shield className="h-4 w-4" />
+                <span>Admin</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
+          {/* Dashboard Tab */}
+          <TabsContent value="dashboard">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Engagement Trends Chart */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <TrendingUp className="h-5 w-5" />
+                    <span>Engagement Trends (7 Days)</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart
+                      data={analyticsData?.engagement_trends || []}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Area type="monotone" dataKey="engagement" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Top Performing Handles */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Target className="h-5 w-5" />
+                    <span>Top Performing Handles</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {analyticsData?.top_handles?.slice(0, 5).map((handle, index) => (
+                      <div key={handle.handle_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                            {index + 1}
+                          </div>
+                          <div>
+                            <p className="font-medium">{handle.screen_name}</p>
+                            <p className="text-sm text-gray-500">{handle.followers} followers</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-blue-600">{handle.engagement}</p>
+                          <p className="text-sm text-gray-500">engagements</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Enhanced Compose Tab */}
           <TabsContent value="compose">
             <Card>
               <CardHeader>
@@ -401,6 +600,31 @@ function App() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Handle Selection */}
+                {handles.length > 0 && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Select Twitter Handles</label>
+                    <div className="flex flex-wrap gap-2">
+                      {handles.map(handle => (
+                        <Button
+                          key={handle.id}
+                          variant={selectedHandles.includes(handle.id) ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => {
+                            setSelectedHandles(prev => 
+                              prev.includes(handle.id) 
+                                ? prev.filter(id => id !== handle.id)
+                                : [...prev, handle.id]
+                            );
+                          }}
+                        >
+                          {handle.screen_name}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <Textarea
                   placeholder="What's happening?"
                   value={tweetText}
@@ -424,85 +648,117 @@ function App() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="retweet">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Repeat className="h-5 w-5" />
-                  <span>Retweet</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Input
-                  placeholder="Enter Tweet ID to retweet"
-                  value={retweetId}
-                  onChange={(e) => setRetweetId(e.target.value)}
-                />
-                <Button 
-                  onClick={handleRetweet} 
-                  disabled={loading || !retweetId.trim()}
-                  className="bg-green-500 hover:bg-green-600"
-                >
-                  {loading ? 'Retweeting...' : 'Retweet'}
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <BarChart3 className="h-5 w-5" />
-                  <span>Tweet Analytics</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Enter Tweet ID for analytics"
-                    value={analyticsId}
-                    onChange={(e) => setAnalyticsId(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button 
-                    onClick={getAnalytics} 
-                    disabled={loading || !analyticsId.trim()}
-                  >
-                    {loading ? 'Loading...' : 'Get Analytics'}
+          {/* Handles Management Tab */}
+          <TabsContent value="handles">
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Twitter Handles</h2>
+                {(user.role === 'super_admin' || user.role === 'admin') && (
+                  <Button onClick={() => setShowHandleModal(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Handle
                   </Button>
-                </div>
-
-                {analytics && (
-                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                    <h3 className="font-semibold mb-4">Tweet Analytics</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex items-center space-x-2">
-                        <Heart className="h-4 w-4 text-red-500" />
-                        <span>Likes: {analytics.likes}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Repeat className="h-4 w-4 text-green-500" />
-                        <span>Retweets: {analytics.retweets}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MessageSquare className="h-4 w-4 text-blue-500" />
-                        <span>Replies: {analytics.replies}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <TrendingUp className="h-4 w-4 text-purple-500" />
-                        <span>Impressions: {analytics.impressions}</span>
-                      </div>
-                    </div>
-                    <div className="mt-4 p-3 bg-white rounded border">
-                      <p className="text-sm text-gray-600">{analytics.text}</p>
-                    </div>
-                  </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {handles.map(handle => (
+                  <Card key={handle.id} className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                            {handle.screen_name.charAt(1)}
+                          </div>
+                          <div>
+                            <h3 className="font-semibold">{handle.screen_name}</h3>
+                            <p className="text-sm text-gray-500">{handle.handle_name}</p>
+                          </div>
+                        </div>
+                        <Badge variant={handle.status === 'active' ? 'default' : 'secondary'}>
+                          {handle.status}
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                          <p className="text-2xl font-bold">{handle.followers_count}</p>
+                          <p className="text-sm text-gray-500">Followers</p>
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold">{handle.following_count}</p>
+                          <p className="text-sm text-gray-500">Following</p>
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold">{handle.tweets_count}</p>
+                          <p className="text-sm text-gray-500">Tweets</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
           </TabsContent>
 
+          {/* Enhanced Analytics Tab */}
+          <TabsContent value="analytics">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <BarChart3 className="h-5 w-5" />
+                    <span>Tweet Analytics</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Enter Tweet ID for analytics"
+                      value={analyticsId}
+                      onChange={(e) => setAnalyticsId(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button 
+                      onClick={getAnalytics} 
+                      disabled={loading || !analyticsId.trim()}
+                    >
+                      {loading ? 'Loading...' : 'Get Analytics'}
+                    </Button>
+                  </div>
+
+                  {analytics && (
+                    <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                      <h3 className="font-semibold mb-4">Tweet Analytics</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-center space-x-2">
+                          <Heart className="h-4 w-4 text-red-500" />
+                          <span>Likes: {analytics.likes}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Repeat className="h-4 w-4 text-green-500" />
+                          <span>Retweets: {analytics.retweets}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <MessageSquare className="h-4 w-4 text-blue-500" />
+                          <span>Replies: {analytics.replies}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <TrendingUp className="h-4 w-4 text-purple-500" />
+                          <span>Impressions: {analytics.impressions}</span>
+                        </div>
+                      </div>
+                      <div className="mt-4 p-3 bg-white rounded border">
+                        <p className="text-sm text-gray-600">{analytics.text}</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Activity Tab */}
           <TabsContent value="activity">
             <Card>
               <CardHeader>
@@ -520,20 +776,22 @@ function App() {
                       <div key={activity.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center space-x-3">
                           <div className={`p-2 rounded-full ${
-                            activity.action === 'post_tweet' ? 'bg-blue-100' : 'bg-green-100'
+                            activity.action.includes('tweet') ? 'bg-blue-100' : 
+                            activity.action.includes('retweet') ? 'bg-green-100' : 
+                            'bg-purple-100'
                           }`}>
-                            {activity.action === 'post_tweet' ? (
+                            {activity.action.includes('tweet') ? (
                               <Send className="h-4 w-4 text-blue-600" />
-                            ) : (
+                            ) : activity.action.includes('retweet') ? (
                               <Repeat className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <Activity className="h-4 w-4 text-purple-600" />
                             )}
                           </div>
                           <div>
-                            <p className="font-medium">
-                              {activity.action === 'post_tweet' ? 'Posted Tweet' : 'Retweeted'}
-                            </p>
+                            <p className="font-medium">{activity.action.replace('_', ' ')}</p>
                             <p className="text-sm text-gray-500">
-                              {new Date(activity.timestamp).toLocaleString()}
+                              {activity.user_name} • {new Date(activity.timestamp).toLocaleString()}
                             </p>
                           </div>
                         </div>
@@ -547,6 +805,73 @@ function App() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Admin Panel Tab */}
+          {(user.role === 'super_admin' || user.role === 'admin') && (
+            <TabsContent value="admin">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold">Admin Panel</h2>
+                  <Button onClick={() => setShowUserModal(true)}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add User
+                  </Button>
+                </div>
+
+                {/* Users Management */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Team Members</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {users.map(usr => (
+                        <div key={usr.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <Avatar>
+                              <AvatarFallback>{usr.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{usr.name}</p>
+                              <p className="text-sm text-gray-500">{usr.email}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Badge className={getRoleColor(usr.role)}>
+                              {getRoleLabel(usr.role)}
+                            </Badge>
+                            <div className="flex items-center space-x-1">
+                              {usr.is_active ? (
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <XCircle className="h-4 w-4 text-red-500" />
+                              )}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedUser(usr)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            {user.role === 'super_admin' && usr.id !== user.id && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteUser(usr.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
 
         {/* Message Alert */}
