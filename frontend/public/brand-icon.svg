@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">WithRG</title>
+  <defs>
+    <linearGradient id="background" x1="64" y1="48" x2="448" y2="464" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1769e0"/>
+      <stop offset="1" stop-color="#101c3d"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#background)"/>
+  <path d="M92 155h58l32 170 43-130h62l43 130 32-170h58l-55 224h-67l-42-124-42 124h-67L92 155Z" fill="#fff"/>
+  <circle cx="407" cy="112" r="38" fill="#f26a21"/>
+</svg>
