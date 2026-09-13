@@ -1,57 +1,32 @@
-# WithRG X Account Management
+# WithRG X — mobile dashboard
 
-Mobile-first Progressive Web App for securely managing multiple WithRG X accounts.
-Handlers use their own dashboard login and only see the accounts assigned to them.
-They never receive an X password or OAuth token.
+React + Vite PWA for individually authorized WithRG X account handlers.
 
-The production backend lives in
-[`debarshi1990/withrg-x-backend`](https://github.com/debarshi1990/withrg-x-backend).
-The obsolete FastAPI prototype and its demo setup scripts have been removed from
-this repository so there is only one API contract.
+Start with [RESTART_GUIDE.md](RESTART_GUIDE.md) for the current state, exact Render settings, credentials, account setup and live launch checks. Companion backend: [withrg-x-backend](https://github.com/debarshi1990/withrg-x-backend).
 
-## Included workflows
+## Local development
 
-- Individual Super Admin, Admin, and Poster logins
-- X OAuth 2.0 with PKCE account connection
-- Account-level handler assignments
-- Text posts and replies to one or several authorised accounts
-- Account and team views designed for narrow phone screens
-- Audit activity history
-- Installable Android and iPhone PWA
-- Offline application shell without caching authenticated API responses
-
-## Run locally
+Use Node 22. Run the backend on port 10000, then:
 
 ```bash
 cd frontend
-npm install
-VITE_API_URL=http://localhost:10000 npm start
+npm ci
+npm run dev
 ```
 
-If the frontend and API are served from the same origin, `VITE_API_URL` can
-be omitted.
+Open `http://localhost:3000`. Vite proxies `/api` to the local backend. For a separate deployed API, configure `frontend/.env` from `frontend/.env.example`; the only frontend variable is the public API origin.
 
-## Build
+## Verification
 
 ```bash
 cd frontend
+npm ci
 npm run build
+npx playwright install chromium
+npm run test:e2e
+npm audit
 ```
 
-Deploy the generated `frontend/dist` directory to a static host. Configure all
-unknown paths to serve `index.html` so PWA navigation continues to work.
+Tests use API fixtures; real X/Google authorization and live publishing are separate acceptance checks. Production service-worker assets are generated during the build. API responses and X tokens are never cached by the service worker.
 
-## Phone installation
-
-- Android Chrome/Edge: open the production HTTPS URL and choose **Install app**.
-- iPhone Safari: open the URL, tap **Share**, then **Add to Home Screen**.
-
-PWA installation requires HTTPS in production.
-
-## Security
-
-No X client secret or user token belongs in this frontend repository. The backend
-encrypts per-account OAuth tokens and performs all X API requests. Any credentials
-that were previously committed to either repository must be rotated before
-deployment, because deleting a current `.env` file does not remove values from Git
-history.
+The `render.yaml` file defines a static site with SPA routing and security headers. Existing code/deployments are not automatically replaced by merely adding this file.

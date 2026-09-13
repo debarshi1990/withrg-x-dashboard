@@ -21,12 +21,6 @@
     <noscript>JavaScript is required to use the WithRG X dashboard.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function () {
-          navigator.serviceWorker.register('/sw.js').catch(function () {});
-        });
-      }
-    </script>
+
   </body>
 </html>

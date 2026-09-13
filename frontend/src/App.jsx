@@ -21,8 +21,10 @@ import {
   Zap
 } from 'lucide-react';
 import './App.css';
+import { request } from './request';
+import GoogleSignIn from './GoogleSignIn';
+import { ComposeScreen, HistoryScreen, EngageScreen, SettingsScreen } from './WorkflowScreens';
 
-const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const TOKEN_KEY = 'withrg_x_session';
 
 function App() {
@@ -30,7 +32,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [tab, setTab] = useState(() => {
     const requested = new URLSearchParams(window.location.search).get('tab');
-    return ['home', 'compose', 'accounts', 'activity', 'team'].includes(requested)
+    return ['home', 'compose', 'accounts', 'activity', 'team', 'history', 'engage', 'settings'].includes(requested)
       ? requested
       : 'home';
   });
@@ -45,39 +47,25 @@ function App() {
   const [installPrompt, setInstallPrompt] = useState(null);
   const [mobileMenu, setMobileMenu] = useState(false);
 
-  const api = useCallback(
-    async (path, options = {}) => {
-      const headers = { ...(options.headers || {}) };
-      if (options.body && !(options.body instanceof FormData)) {
-        headers['Content-Type'] = 'application/json';
-      }
-      if (token) headers.Authorization = `Bearer ${token}`;
-
-      let response;
-      try {
-        response = await fetch(`${API_BASE}/api${path}`, { ...options, headers });
-      } catch (_error) {
-        throw new Error('Cannot reach the server. Check your internet connection.');
-      }
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        if (response.status === 401 && token) {
-          localStorage.removeItem(TOKEN_KEY);
-          setToken(null);
-          setUser(null);
-        }
-        throw new Error(body.message || 'The request could not be completed');
-      }
-      return body;
-    },
-    [token]
-  );
+  const api = useCallback(async (path, options = {}) => {
+    try { return await request(path, options, token); }
+    catch (error) {
+      if (error.status === 401) { localStorage.removeItem(TOKEN_KEY); setToken(null); setUser(null); }
+      if (error.body?.code === 'PASSWORD_CHANGE_REQUIRED') setTab('settings');
+      throw error;
+    }
+  }, [token]);
+  function acceptSession(result) {
+    localStorage.setItem(TOKEN_KEY, result.token);
+    setUser(result.user); setToken(result.token);
+    if (result.user.mustChangePassword) setTab('settings');
+  }
 
   const isAdmin = user && ['super_admin', 'admin'].includes(user.role);
 
   const refreshApp = useCallback(
     async (resolvedUser = user) => {
-      if (!resolvedUser) return;
+      if (!resolvedUser || resolvedUser.mustChangePassword) return;
       const requests = [
         api('/dashboard'),
         api('/handles'),
@@ -107,6 +95,7 @@ function App() {
         const me = await api('/auth/me');
         if (!active) return;
         setUser(me);
+        if (me.mustChangePassword) setTab('settings');
         await refreshApp(me);
       } catch (error) {
         if (active) setToast({ type: 'error', text: error.message });
@@ -163,16 +152,19 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!toast) return undefined;
+    if (!toast || !user) return undefined;
     const timeout = window.setTimeout(() => setToast(null), 5000);
     return () => window.clearTimeout(timeout);
-  }, [toast]);
+  }, [toast, user]);
 
-  const signOut = () => {
+  const signOut = async () => {
+    if (busy) return;
+    try { await api('/auth/logout', { method: 'POST' }); } catch {}
     localStorage.removeItem(TOKEN_KEY);
     setToken(null);
     setUser(null);
     setTab('home');
+    setHandles([]); setMembers([]); setDashboard(null); setActivities([]);
   };
 
   const navItems = useMemo(() => {
@@ -187,6 +179,7 @@ function App() {
   }, [isAdmin]);
 
   const goTo = (nextTab) => {
+    if (busy) { setToast({ type: 'info', text: 'Please wait for the current action to finish.' }); return; }
     setTab(nextTab);
     setMobileMenu(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -210,30 +203,12 @@ function App() {
   if (initializing) return <LoadingScreen />;
 
   if (!token || !user) {
-    return (
-      <Login
-        busy={busy}
-        onLogin={async (credentials) => {
-          setBusy(true);
-          try {
-            const result = await fetch(`${API_BASE}/api/auth/login`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(credentials)
-            });
-            const body = await result.json().catch(() => ({}));
-            if (!result.ok) throw new Error(body.message || 'Login failed');
-            localStorage.setItem(TOKEN_KEY, body.token);
-            setUser(body.user);
-            setToken(body.token);
-          } catch (error) {
-            setToast({ type: 'error', text: error.message });
-          } finally {
-            setBusy(false);
-          }
-        }}
-      />
-    );
+    return <Login busy={busy} error={toast?.text} onError={text => setToast({ type: 'error', text })} onLogin={async (credentials, google = false) => {
+      setBusy(true); setToast(null);
+      try { acceptSession(await request(google ? '/auth/google' : '/auth/login', { method: 'POST', body: JSON.stringify(credentials) })); }
+      catch (error) { setToast({ type: 'error', text: error.message }); }
+      finally { setBusy(false); }
+    }} />;
   }
 
   return (
@@ -264,7 +239,7 @@ function App() {
               <Smartphone size={17} />
               <span>Install</span>
             </button>
-            <button className="profile-button" onClick={() => setMobileMenu(true)}>
+            <button className="profile-button" aria-label="Your settings" onClick={() => goTo('settings')}>
               {initials(user.name)}
             </button>
           </div>
@@ -288,6 +263,9 @@ function App() {
           ))}
         </nav>
         <div className="side-panel-footer">
+          <button onClick={() => goTo('history')}>History & insights</button>
+          <button onClick={() => goTo('engage')}>Like or repost</button>
+          <button onClick={() => goTo('settings')}><Settings size={18} /> Settings</button>
           <button onClick={install}>
             <Smartphone size={18} /> Install on this phone
           </button>
@@ -299,7 +277,7 @@ function App() {
       {mobileMenu && <button className="backdrop" onClick={() => setMobileMenu(false)} />}
 
       <main className="main-content">
-        {tab === 'home' && (
+        {tab === 'home' && !user.mustChangePassword && (
           <HomeScreen
             user={user}
             dashboard={dashboard}
@@ -307,40 +285,17 @@ function App() {
             onNavigate={goTo}
           />
         )}
-        {tab === 'compose' && (
-          <ComposeScreen
-            handles={handles.filter((handle) => handle.status === 'active')}
-            busy={busy}
-            onPublish={async (payload) => {
-              setBusy(true);
-              try {
-                const result = await api('/posts', {
-                  method: 'POST',
-                  body: JSON.stringify(payload)
-                });
-                setToast({
-                  type: result.failed ? 'info' : 'success',
-                  text: result.failed
-                    ? `${result.published} posted; ${result.failed} failed. Check Activity.`
-                    : `Published successfully to ${result.published} account${
-                        result.published === 1 ? '' : 's'
-                      }.`
-                });
-                await refreshApp();
-                return result;
-              } catch (error) {
-                setToast({ type: 'error', text: error.message });
-                return null;
-              } finally {
-                setBusy(false);
-              }
-            }}
-          />
-        )}
-        {tab === 'accounts' && (
+        {tab === 'compose' && !user.mustChangePassword && <ComposeScreen user={user} handles={handles} api={api} online={online} onPublished={refreshApp} onBusy={setBusy} />}
+        {(tab === 'settings' || user.mustChangePassword) && <SettingsScreen user={user} api={api} onSession={acceptSession} />}
+        {tab === 'history' && !user.mustChangePassword && <HistoryScreen handles={handles} api={api} />}
+        {tab === 'engage' && !user.mustChangePassword && <EngageScreen user={user} handles={handles} api={api} onDone={refreshApp} />}
+        {tab === 'accounts' && !user.mustChangePassword && (
           <AccountsScreen
             handles={handles}
             isAdmin={isAdmin}
+            isSuperAdmin={user.role === 'super_admin'}
+            onRefresh={async handle => { try { await api(`/handles/${handle._id}/refresh`, { method: 'POST' }); await refreshApp(); } catch (error) { setToast({ type: 'error', text: error.message }); } }}
+            onDisconnect={async handle => { if (!window.confirm(`Disconnect @${handle.username} and remove all handler access?`)) return; try { const result = await api(`/handles/${handle._id}`, { method: 'DELETE' }); setToast({ type: 'info', text: result.message }); await refreshApp(); } catch (error) { setToast({ type: 'error', text: error.message }); } }}
             busy={busy}
             onConnect={async () => {
               setBusy(true);
@@ -354,8 +309,8 @@ function App() {
             }}
           />
         )}
-        {tab === 'activity' && <ActivityScreen activities={activities} />}
-        {tab === 'team' && isAdmin && (
+        {tab === 'activity' && !user.mustChangePassword && <ActivityScreen activities={activities} />}
+        {tab === 'team' && isAdmin && !user.mustChangePassword && (
           <TeamScreen
             currentUser={user}
             members={members}
@@ -396,6 +351,14 @@ function App() {
                 setBusy(false);
               }
             }}
+            onResetPassword={async (member, password) => {
+              try { const result = await api(`/team/members/${member._id}/password`, { method: 'POST', body: JSON.stringify({ password }) }); setToast({ type: 'success', text: result.message }); return true; }
+              catch (error) { setToast({ type: 'error', text: error.message }); return false; }
+            }}
+            onChangeRole={async (member, role) => {
+              try { await api(`/team/members/${member._id}`, { method: 'PATCH', body: JSON.stringify({ role }) }); await refreshApp(); }
+              catch (error) { setToast({ type: 'error', text: error.message }); }
+            }}
             onToggleActive={async (member) => {
               setBusy(true);
               try {
@@ -433,7 +396,7 @@ function App() {
   );
 }
 
-function Login({ busy, onLogin }) {
+function Login({ busy, onLogin, error, onError }) {
   const [values, setValues] = useState({ email: '', password: '' });
   return (
     <div className="login-page">
@@ -449,6 +412,7 @@ function Login({ busy, onLogin }) {
           <ShieldCheck size={28} />
         </div>
         <h1>Welcome back</h1>
+        {error && <p className="inline-warning" role="alert">{error}</p>}
         <p>Manage assigned X accounts without sharing their passwords.</p>
         <form
           onSubmit={(event) => {
@@ -483,6 +447,8 @@ function Login({ busy, onLogin }) {
             {busy ? 'Signing in…' : 'Sign in securely'}
           </button>
         </form>
+        <GoogleSignIn onLogin={onLogin} busy={busy} onError={onError} />
+        <p className="login-help">Use your own dashboard login. Ask an administrator if you need access or a password reset.</p>
         <div className="security-note">
           <ShieldCheck size={17} />
           <span>X passwords and account tokens are never shown to handlers.</span>
@@ -567,118 +533,7 @@ function HomeScreen({ user, dashboard, handles, onNavigate }) {
   );
 }
 
-function ComposeScreen({ handles, busy, onPublish }) {
-  const [text, setText] = useState('');
-  const [replyToId, setReplyToId] = useState('');
-  const [selected, setSelected] = useState([]);
-  const [lastResult, setLastResult] = useState(null);
-
-  useEffect(() => {
-    if (handles.length === 1) setSelected([handles[0]._id]);
-  }, [handles]);
-
-  const remaining = 280 - [...text].length;
-  const toggle = (id) =>
-    setSelected((current) =>
-      current.includes(id) ? current.filter((value) => value !== id) : [...current, id]
-    );
-
-  return (
-    <div className="screen narrow-screen">
-      <div className="page-heading">
-        <span className="eyebrow">PUBLISH</span>
-        <h1>Create a post</h1>
-        <p>Select exactly where this message should be published.</p>
-      </div>
-      <section className="panel compose-panel">
-        <label className="field-label">Post from</label>
-        <div className="account-picker">
-          {handles.map((handle) => (
-            <button
-              key={handle._id}
-              type="button"
-              className={`account-pill ${selected.includes(handle._id) ? 'selected' : ''}`}
-              onClick={() => toggle(handle._id)}
-            >
-              <Avatar handle={handle} />
-              <span>@{handle.username}</span>
-              {selected.includes(handle._id) && <Check size={16} />}
-            </button>
-          ))}
-        </div>
-        {!handles.length && (
-          <div className="inline-warning">No active X accounts are available to you.</div>
-        )}
-
-        <label className="field-label" htmlFor="post-text">
-          Message
-        </label>
-        <div className={`composer ${remaining < 0 ? 'invalid' : ''}`}>
-          <textarea
-            id="post-text"
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-            placeholder="What should WithRG say?"
-            rows={7}
-          />
-          <span className={`character-count ${remaining < 20 ? 'warning' : ''}`}>
-            {remaining}
-          </span>
-        </div>
-
-        <details className="reply-options">
-          <summary>Reply to an existing post</summary>
-          <label>
-            Original post ID
-            <input
-              inputMode="numeric"
-              value={replyToId}
-              onChange={(event) => setReplyToId(event.target.value.replace(/\D/g, ''))}
-              placeholder="Optional numeric post ID"
-            />
-          </label>
-        </details>
-
-        <div className="publish-summary">
-          <span>
-            {selected.length
-              ? `${selected.length} account${selected.length === 1 ? '' : 's'} selected`
-              : 'Select an account'}
-          </span>
-          <button
-            className="primary-button"
-            disabled={busy || !text.trim() || remaining < 0 || !selected.length}
-            onClick={async () => {
-              const result = await onPublish({ text, handleIds: selected, replyToId });
-              if (result?.published) {
-                setText('');
-                setReplyToId('');
-                setLastResult(result);
-              }
-            }}
-          >
-            {busy ? <RefreshCw className="spin" size={18} /> : <Send size={18} />}
-            {busy ? 'Publishing…' : replyToId ? 'Publish reply' : 'Publish now'}
-          </button>
-        </div>
-
-        {lastResult?.results?.some((result) => result.success) && (
-          <div className="result-links">
-            {lastResult.results
-              .filter((result) => result.success)
-              .map((result) => (
-                <a key={result.postId} href={result.url} target="_blank" rel="noreferrer">
-                  View @{result.username} post <ChevronRight size={15} />
-                </a>
-              ))}
-          </div>
-        )}
-      </section>
-    </div>
-  );
-}
-
-function AccountsScreen({ handles, isAdmin, busy, onConnect }) {
+function AccountsScreen({ handles, isAdmin, isSuperAdmin, busy, onConnect, onRefresh, onDisconnect }) {
   return (
     <div className="screen">
       <div className="page-heading heading-with-action">
@@ -712,6 +567,11 @@ function AccountsScreen({ handles, isAdmin, busy, onConnect }) {
                   Posts
                 </span>
               </div>
+              <small>Counts updated {new Date(handle.metricsUpdatedAt || handle.lastConnectedAt).toLocaleString()}</small>
+              <div className="action-row">
+                {handle.status !== 'disconnected' && <button className="text-button" onClick={() => onRefresh(handle)}>Refresh counts</button>}
+                {isSuperAdmin && handle.status !== 'disconnected' && <button className="text-button danger" onClick={() => onDisconnect(handle)}>Disconnect</button>}
+              </div>
               <div className="account-security">
                 <ShieldCheck size={17} />
                 <span>Authorised through X OAuth</span>
@@ -742,7 +602,7 @@ function ActivityScreen({ activities }) {
       <div className="page-heading">
         <span className="eyebrow">AUDIT TRAIL</span>
         <h1>Recent activity</h1>
-        <p>Every publishing and access action is recorded.</p>
+        <p>Recent publishing and access actions, including failed or unconfirmed attempts.</p>
       </div>
       <section className="panel activity-panel">
         {activities.length ? (
@@ -760,6 +620,8 @@ function ActivityScreen({ activities }) {
                 </span>
                 <div>
                   <strong>{activityTitle(activity)}</strong>
+                  {activity.details?.message && <p className="activity-detail">{activity.details.message}</p>}
+                  {activity.postId && <a href={`https://x.com/i/web/status/${activity.postId}`} target="_blank" rel="noreferrer">View post</a>}
                   <p>
                     {activity.userName}
                     {activity.handleUsername ? ` · @${activity.handleUsername}` : ''}
@@ -788,10 +650,13 @@ function TeamScreen({
   busy,
   onCreate,
   onToggleAssignment,
-  onToggleActive
+  onToggleActive,
+  onResetPassword,
+  onChangeRole
 }) {
   const [showCreate, setShowCreate] = useState(false);
   const [expanded, setExpanded] = useState(null);
+  const [resetPassword, setResetPassword] = useState('');
   const [values, setValues] = useState({
     name: '',
     email: '',
@@ -841,9 +706,9 @@ function TeamScreen({
                 <div className="member-access-heading">
                   <div>
                     <strong>Account access</strong>
-                    <p>Tap an account to grant or revoke publishing access.</p>
+                    <p>Posters use assigned accounts. Admins can access all accounts.</p>
                   </div>
-                  {member._id !== currentUser.id && (
+                  {member._id !== currentUser.id && member.role !== 'super_admin' && (currentUser.role === 'super_admin' || member.role === 'poster') && (
                     <button
                       className={`status-toggle ${member.isActive ? '' : 'off'}`}
                       disabled={busy}
@@ -853,13 +718,17 @@ function TeamScreen({
                     </button>
                   )}
                 </div>
+                {member.role !== 'super_admin' && (currentUser.role === 'super_admin' || member.role === 'poster') && <>
+                  {currentUser.role === 'super_admin' && <label>Role<select aria-label={`Role for ${member.name}`} value={member.role} onChange={event => onChangeRole(member, event.target.value)}><option value="poster">Poster</option><option value="admin">Admin — all accounts</option></select></label>}
+                  <form onSubmit={async event => { event.preventDefault(); if (await onResetPassword(member, resetPassword)) setResetPassword(''); }}><label>Reset temporary password<input type="password" autoComplete="new-password" minLength={12} required value={resetPassword} onChange={event => setResetPassword(event.target.value)} /></label><button className="secondary-button" disabled={busy}>Reset password</button></form>
+                </>}
                 <div className="assignment-grid">
                   {handles.map((handle) => {
                     const assigned = hasAccess(member, handle._id);
                     return (
                       <button
                         key={handle._id}
-                        disabled={busy || member.role === 'super_admin'}
+                        disabled={busy || member.role !== 'poster'}
                         className={assigned ? 'assigned' : ''}
                         onClick={() => onToggleAssignment(member, handle, assigned)}
                       >
@@ -910,7 +779,7 @@ function TeamScreen({
                 Temporary password
                 <input
                   type="password"
-                  minLength={10}
+                  minLength={12}
                   required
                   value={values.password}
                   onChange={(event) => setValues({ ...values, password: event.target.value })}
