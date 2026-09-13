@@ -1,104 +1,40 @@
 {
   "short_name": "WithRG X",
-  "name": "WithRG X Dashboard - Political Twitter Management",
-  "description": "Official Twitter management platform for WithRG political movement - True Leadership",
+  "name": "WithRG X Account Management",
+  "description": "Securely manage assigned WithRG X accounts without sharing passwords.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f5f7fb",
+  "theme_color": "#101c3d",
   "icons": [
     {
-      "src": "https://customer-assets.emergentagent.com/job_withrg-x-dash/artifacts/t2uvs7gh_WithRG%20logo.png",
+      "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://customer-assets.emergentagent.com/job_withrg-x-dash/artifacts/t2uvs7gh_WithRG%20logo.png",
+      "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icons/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icons/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any"
     }
   ],
-  "start_url": "/",
-  "display": "standalone",
-  "theme_color": "#f97316",
-  "background_color": "#ffffff",
-  "orientation": "portrait-primary",
-  "scope": "/",
-  "categories": ["productivity", "social", "political"],
-  "lang": "en-US",
-  "dir": "ltr",
-  "prefer_related_applications": false,
-  "related_applications": [],
   "shortcuts": [
     {
-      "name": "Compose Tweet",
-      "short_name": "Compose",
-      "description": "Quickly compose and post a tweet for WithRG campaign",
+      "name": "Create post",
+      "short_name": "Post",
       "url": "/?tab=compose",
-      "icons": [
-        {
-          "src": "https://customer-assets.emergentagent.com/job_withrg-x-dash/artifacts/t2uvs7gh_WithRG%20logo.png",
-          "sizes": "192x192"
-        }
-      ]
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Campaign Analytics",
-      "short_name": "Analytics",
-      "description": "View WithRG campaign engagement analytics",
-      "url": "/?tab=analytics",
-      "icons": [
-        {
-          "src": "https://customer-assets.emergentagent.com/job_withrg-x-dash/artifacts/t2uvs7gh_WithRG%20logo.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Team Management",
-      "short_name": "Admin",
-      "description": "Manage WithRG campaign team and handles",
-      "url": "/?tab=admin",
-      "icons": [
-        {
-          "src": "https://customer-assets.emergentagent.com/job_withrg-x-dash/artifacts/t2uvs7gh_WithRG%20logo.png",
-          "sizes": "192x192"
-        }
-      ]
+      "name": "X accounts",
+      "short_name": "Accounts",
+      "url": "/?tab=accounts",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }
